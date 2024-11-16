@@ -6,10 +6,12 @@
 
 // Definição de classe em C (Lass)
 #define Class(name) typedef struct name name; struct name
-#define METHODS_OF_CLASS };
-#define CONSTRUTOR_OF(val, ...) val* novo_##val (__VA_ARGS__){ val* tmp = (val*) malloc (sizeof (val));
+#define METHODS_OF_CLASS void (*clear) (void);};
+#define CONSTRUTOR_OF(val, ...) val* novo_##val (__VA_ARGS__){ val* tmp = (val*) malloc (sizeof (val)); tmp->clear = val##_clear;
 #define END_OF_CONSTRUTOR this = tmp; return tmp; if(0)
 #define set_public(val) tmp->val = val;
+#define DESTRUTOR_OF(val) void val##_clear ()
+#define atual(val) this = &val; val
 
 // QOL
 #define reservar(val,vlr) (val*) reservar_espaco_funcao (vlr*sizeof (val)); 
@@ -17,30 +19,6 @@
 #define null NULL
 #define elif else if
 void* this;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-// CLASS SKELETON
-
-// Classe esqueleto para cópia e referência
-Class (ESQUELETO)
-{
-    // variaveis
-
-    // metodos publicos
-
-    METHODS_OF_CLASS;
-    // metodos
-
-    // construtor final
-    CONSTRUTOR_OF (ESQUELETO)
-    {
-        // definição
-
-        // setting de métodos públicos
-
-        END_OF_CONSTRUTOR;
-    }
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // BOOLEAN
@@ -128,6 +106,16 @@ void* reservar_espaco_funcao (size_t Size)
     }
 }
 
+// calloc
+char* reservar_string (int quantos)
+{
+    char* tmp = (char*) reservar_espaco_funcao (quantos);
+
+    loop (quantos, x) tmp [x] = '*';
+
+    return tmp;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // TEXTOS
 
@@ -157,14 +145,14 @@ boolean eh_igual (char* t1, char* t2)
     return resposta;
 }
 
-// Strcpy. Retorna o tamanho da string final.
+// Strcpy. Retorna o tamanho da string (em caracteres) final.
 int copiar_texto (char* t1, char* t2)
 {
     int x = 0;
 
     if (tamanho (t1) >= tamanho (t2))
     {
-        char c = 0;
+        char c = '*';
 
         while (c != '\0')
         {
@@ -180,31 +168,58 @@ int copiar_texto (char* t1, char* t2)
     return x - 1;
 }
 
+// Concatenar
+char* conc (char* t1, char* t2)
+{
+    int tam1 = tamanho (t1);
+    int tam2 = tamanho (t2);
+
+    int tamfinal = tam1 + tam2 + 1;
+    char* tmp = reservar_string (tamfinal);
+
+    copiar_texto (tmp, t1);
+
+    for (int x = tam1; x < tamfinal; x++)
+    {
+        tmp [x] = t2 [x - tam1];
+    }
+
+    tmp [tamfinal] = '\0';
+
+    return tmp;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // STRING
 
 // Tipo String
-typedef struct String
+Class (String)
 {
     char *valor;
     int tamanho;
-} 
-String;
 
-// Construtor do tipo String
-String* nova_String (char* texto)
-{
-    String *tmp = reservar (String, 1);
-    int tam = tamanho (texto);
+    METHODS_OF_CLASS;
 
-    if (tmp == null) murder ("Falha de alocacao em nova_String.");
+    DESTRUTOR_OF (String)
+    {
+        printf ("%s\n", ((String*)this)->valor);
 
-    tmp->valor = reservar (char, (tam + 1));
-    if (tmp->valor == null) murder ("Falha de alocacao 2 em nova_String.");
+        free (((String*)this)->valor);
+    }
 
-    tmp->tamanho = copiar_texto (tmp->valor, texto);
+    CONSTRUTOR_OF (String, char* texto)
+    {
+        int tam = tamanho (texto);
 
-    return tmp;
+        if (tmp == null) murder ("Falha de alocacao em nova_String.");
+
+        tmp->valor = reservar_string (tam + 1);
+        if (tmp->valor == null) murder ("Falha de alocacao 2 em nova_String.");
+
+        tmp->tamanho = copiar_texto (tmp->valor, texto);
+
+        END_OF_CONSTRUTOR;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,10 +227,40 @@ String* nova_String (char* texto)
 
 Class (Pokemon)
 {
+    String          *description;
+    int             generation;
+    String          *name;
+    int             Id;
+
+    void (*ler) (String entrada);
+
     METHODS_OF_CLASS;
 
+    // destrutor
+    DESTRUTOR_OF (Pokemon)
+    {
+        Pokemon *P = ((Pokemon*) this);
+
+        this = P->description; P->description->clear ();
+        this = P->name; P->name->clear ();
+
+        this = P;
+
+        free (P);
+    }
+
+    void ler (String entrada)
+    {
+        printf ("%d\n",entrada.tamanho);
+    }
+
+    // construtor
     CONSTRUTOR_OF (Pokemon)
     {
+        tmp->description = novo_String ("ama");
+        tmp->name = novo_String ("ama");
+
+        set_public (ler);
 
         END_OF_CONSTRUTOR;
     }
@@ -231,18 +276,29 @@ Class (Gerenciador)
     boolean     verde;
     FILE*     arquivo;
     int       quantos;
-    String*  entradas;
-
-    void (*imprimir_Arquivo) (void);
 
     METHODS_OF_CLASS;
 
-    // print de debug
-    void imprimir_Arquivo ()
+    // destrutor
+    DESTRUTOR_OF (Gerenciador)
     {
-        char entrada [500] = "";
+        fclose (((Gerenciador*) this) -> arquivo);
 
-        while (fscanf (((Gerenciador*) this)->arquivo, "%[^\n]\n", entrada) == 1) printf ("%s!!!%d\n", entrada, tamanho (entrada));
+        int quantos = ((Gerenciador*) this)->quantos;
+
+        loop (quantos, x) 
+        {
+            Pokemon *tmp = &((Gerenciador*) this)->pokemons [x];
+
+            Gerenciador *G = (Gerenciador*) this;
+            this = tmp;
+
+            tmp->clear ();
+
+            this = G;
+        }
+
+        free (((Gerenciador*) this)->pokemons);
     }
 
     // Construtor do tipo Gerenciador
@@ -252,9 +308,8 @@ Class (Gerenciador)
 
         tmp->quantos = quantos;
 
-        tmp->pokemons = reservar (Pokemon, quantos);
-
-        tmp->entradas = reservar (String, 801); //
+        tmp->pokemons = reservar (Pokemon, 801);
+        loop (quantos, x) tmp->pokemons [x] = *novo_Pokemon ();
 
         tmp->arquivo = fopen ("../pokemon.csv", "rt");
         tmp->verde = false;
@@ -270,7 +325,17 @@ Class (Gerenciador)
             }
         }
 
-        set_public (imprimir_Arquivo);
+        char entrada [500] = "";
+        int cont = 0;
+
+        while (fscanf (tmp->arquivo, "%[^\n]\n", entrada) == 1) 
+        {
+            String *tim = novo_String (entrada);
+
+            this = &tmp->pokemons [cont];
+
+            ((Pokemon*) this)->ler (*tim);
+        }
 
         END_OF_CONSTRUTOR;
     }
@@ -283,7 +348,5 @@ void main (void)
 {
     Gerenciador *pokemons = novo_Gerenciador ();
 
-    pokemons->imprimir_Arquivo ();
-
-    reservar (Gerenciador, 999999999);
+    pokemons->clear ();
 }
