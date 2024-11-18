@@ -337,29 +337,25 @@ boolean contem_caractere (char* entrada, char carac)
     }
 }
 
-// trim
+// remove espaços do inicio e do final se existirem
 char* trim (char* entrada)
 {
     if (entrada == null) murder ("Trim com entrada invalida");
     else
     {
         int tam = tamanho (entrada);
-        boolean comecando = true;
         char* saida = reservar_string (tam + 1);
         int y = 0;
 
         loop ((tam - 1), x)
         {
-            if (comecando)
+            if (x == 0)
             {
-                comecando = false;
-
-                if (entrada [0] != ' ') saida [y++] = entrada [0];
-            }
-            else
-            {
+                if (entrada [0] != ' ')
                 saida [y++] = entrada [x];
             }
+            else
+            saida [y++] = entrada [x];
         }
 
         if (entrada [tam - 1] == ' ')
@@ -617,15 +613,20 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     // --- habilidades (corte [1])
     int quantos_corte_1 = 0;
-    char* tratado = remover_caracteres (corte [1], "[]'");
 
-    char ** corte_1 = separar (tratado, ',', &quantos_corte_1);
+    char ** corte_1 = separar (remover_caracteres (corte [1], "[]'"), ',', &quantos_corte_1);
 
     free_LdSe (poke->habilidades);
     poke->habilidades = novo_LdSe (quantos_corte_1);
 
     loop (quantos_corte_1, x)
     adicionar_na_LdSe (poke->habilidades, novo_String (trim (corte_1 [x])));
+
+    // --- outros (corte [2])
+    int quantos_corte_2 = 0;
+    corte [2] [0] = ' ';
+
+    char ** corte_2 = separar (trim (corte [2]), ',', &quantos_corte_2);
 
 }
 
