@@ -320,30 +320,81 @@ int Str_para_Int (char* str)
     }
 }
 
-// apara pedaços do inicio e do fim de uma string
-char* aparar (char* str, nat ini, nat qfm)
-{   
-    if (str == null) murder ("Texto inexistente em aparar");
+// verifica se a string tem um caractere em especifico
+boolean contem_caractere (char* entrada, char carac)
+{
+    if (entrada == null) murder ("Entrada invalida em contem caractere");
     else
-    {   
-        int tam = tamanho (str);
-        if (tam <= ((ini > qfm)?ini:qfm)) murder ("Logica incoerente na funcao aparar");
+    {
+        int tam = tamanho (entrada);
+        boolean resposta = false;
+
+        for (int x = 0; x < tam && !resposta; x++) 
+            if (entrada [x] == carac)
+                resposta = true;
+        
+        return resposta;
+    }
+}
+
+// trim
+char* trim (char* entrada)
+{
+    if (entrada == null) murder ("Trim com entrada invalida");
+    else
+    {
+        int tam = tamanho (entrada);
+        boolean comecando = true;
+        char* saida = reservar_string (tam + 1);
+        int y = 0;
+
+        loop ((tam - 1), x)
+        {
+            if (comecando)
+            {
+                comecando = false;
+
+                if (entrada [0] != ' ') saida [y++] = entrada [0];
+            }
+            else
+            {
+                saida [y++] = entrada [x];
+            }
+        }
+
+        if (entrada [tam - 1] == ' ')
+        saida [y] = '\0';
         else
         {
-
-            int fim = tam - qfm - 1;
-            
-
-            char* resposta = reservar_string (fim - ini + 1);
-            int x = ini;
-
-            for (; x <= fim; x++) resposta [x - ini] = str [x];
-
-
-            resposta [x] = '\0';
-
-            return resposta;
+            saida [y] = entrada [tam - 1];
+            saida [y + 1] = '\0';
         }
+
+        return saida;
+    }
+}
+
+// Remove os caracteres presentes na segunda string de dentro da primeira e retorna
+char* remover_caracteres (char* texto, char* remocoes)
+{
+    if (texto == null || remocoes == null) murder ("Entradas invalidas em remover caracteres");
+    else
+    {
+        int tam = tamanho (texto);
+        char* resposta = reservar_string (tam);
+        int index = 0;
+
+        loop (tam, x)
+        {
+            if (!contem_caractere (remocoes, texto [x]))
+            {
+                resposta [index++] = texto [x];
+            }
+        }
+
+        resposta [index] = '\0';
+
+        return resposta;
     }
 }
 
@@ -471,6 +522,19 @@ void adicionar_na_LdSe (ref_Lista_de_String_Estatica lista, ref_String valor)
             else lista->lista [lista->x++] = valor;
 }
 
+// imprime todos os elementos
+void imprimir_LdSe (ref_Lista_de_String_Estatica lista)
+{
+    if (lista == null) murder ("Lista inexistente em impressao");
+
+    loop (lista->x, x)
+    {
+        println ("[%d] (tam %d) %s", x, lista->lista [x]->tamanho, lista->lista [x]->texto);
+    }
+
+    println (null);
+}
+
 // destrutor
 void free_LdSe (ref_Lista_de_String_Estatica lista)
 {
@@ -498,6 +562,7 @@ typedef struct Pokemon
     ref_String nome;
     ref_String descricao;
     ref_Lista_de_String_Estatica tipos;
+    ref_Lista_de_String_Estatica habilidades;
 }
 Pokemon;
 typedef Pokemon* ref_Pokemon;
@@ -512,6 +577,7 @@ ref_Pokemon novo_Pokemon ()
     tmp->nome = novo_String (null);
     tmp->descricao = novo_String (null);
     tmp->tipos = novo_LdSe (2);
+    tmp->habilidades = novo_LdSe (1);
 
     return tmp;
 }
@@ -524,9 +590,12 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     // --- parte antes de habilidades (corte [0])
     int quantos_corte_0 = 0;
-    
-    //char * sem_ultimo_carac = aparar(corte [0], 0, 1);
-    
+
+    int tam = tamanho (corte [0]);
+    corte [0] [tam - 1] = '\0';
+    if (corte [0] [tam - 2] == ',')
+    corte [0] [tam - 2] = '\0';
+
     char ** corte_0 = separar (corte [0], ',', &quantos_corte_0);
     
     // Id
@@ -543,8 +612,20 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     // Tipos
     adicionar_na_LdSe (poke->tipos, novo_String (corte_0 [4]));
-    if (tamanho (corte_0 [5])) 
+    if (quantos_corte_0 == 6) 
     adicionar_na_LdSe (poke->tipos, novo_String (corte_0 [5]));
+
+    // --- habilidades (corte [1])
+    int quantos_corte_1 = 0;
+    char* tratado = remover_caracteres (corte [1], "[]'");
+
+    char ** corte_1 = separar (tratado, ',', &quantos_corte_1);
+
+    free_LdSe (poke->habilidades);
+    poke->habilidades = novo_LdSe (quantos_corte_1);
+
+    loop (quantos_corte_1, x)
+    adicionar_na_LdSe (poke->habilidades, novo_String (trim (corte_1 [x])));
 
 }
 
@@ -619,6 +700,30 @@ void imprimir_nomes_Gerenciador (ref_Gerenciador gere)
     }
 }
 
+// todos os tipos
+void imprimir_tipos_Gerenciador (ref_Gerenciador gere)
+{
+    int quantos = gere->quantos_pokemons;
+
+    loop (quantos, x)
+    {
+        println ("ID %d", x + 1);
+        imprimir_LdSe (gere->pokemons [x]->tipos);
+    }
+}
+
+// todas as habilidades
+void imprimir_habilidades_Gerenciador (ref_Gerenciador gere)
+{
+    int quantos = gere->quantos_pokemons;
+
+    loop (quantos, x)
+    {
+        println ("ID %d", x + 1);
+        imprimir_LdSe (gere->pokemons [x]->habilidades);
+    }
+}
+
 // destrutor
 void free_Gerenciador (ref_Gerenciador gere)
 {
@@ -639,7 +744,7 @@ void free_Gerenciador (ref_Gerenciador gere)
 int main (void)
 {
     ref_Gerenciador gerenciador = novo_Gerenciador ();
-    imprimir_nomes_Gerenciador (gerenciador);
+    imprimir_habilidades_Gerenciador (gerenciador);
 
     // fim
     free_Gerenciador (gerenciador);
