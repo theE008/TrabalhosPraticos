@@ -714,8 +714,8 @@ ref_Pokemon novo_Pokemon ()
     tmp->descricao = novo_String (null);
     tmp->tipos = novo_LdSe (2);
     tmp->habilidades = novo_LdSe (1);
-    tmp->peso = 0;
-    tmp->tamanho = 0;
+    tmp->peso = 0.0;
+    tmp->tamanho = 0.0;
     tmp->razao_de_captura = 0;
     tmp->eh_lendario = false;
     tmp->Data_de_captura = novo_Data (null);

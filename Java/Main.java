@@ -8,8 +8,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // BIBLIOTECAS
 
-import java.util.Scanner; // não sei fazer scanner do zero ainda
-import java.io.File;     // nem criar arquivos do zero
+import java.io.File; // não sei fazer arquivos do zero ainda
+import java.util.Scanner;     // nem criar scanners do zero
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // CORE
@@ -26,9 +26,52 @@ class Core
 // classe pokemon
 class Pokemon
 {
+    // VARS
+    private int Id = 0;
+    private int geracao = 0;
+    private String nome = "";
+    private String descricao = "";
+    //tipos
+    //habilidades
+    private double peso = 0.0;
+    private double tamanho = 0.0;
+    private int razao_de_captura = 0;
+    private boolean eh_lendario = false;
+    //data
+
+    // GETS
+    public int getId () {return Id;}
+    public int getGeracao () {return  geracao;}
+    public String getNome () {return nome;}
+
+    // Ler uma string para construir o Pokemon
     public void ler (String entrada)
     {
-        System.out.println (entrada);
+        int quantas_partes = 0;
+        String [] corte = entrada.split ("\"");
+
+        // --- parte antes de habilidades (corte [0])
+        int quantos_corte_0 = 0;
+
+        String [] corte_0 = corte [0].replaceAll ("^,+|,+$", "").split (",");
+
+        // Id
+        this.Id = Integer.parseInt (corte_0 [0]);
+
+        // Geração
+        this.geracao = Integer.parseInt (corte_0 [1]);
+
+        // Nome
+        this.nome = corte_0 [2];
+
+        // Descrição
+
+    }
+
+    // construtor
+    public Pokemon ()
+    {
+
     }
 }
 
@@ -38,8 +81,18 @@ class Pokemon
 // classe que gerencia pokemons.
 class Gerenciador
 {
+    // VARS
     private static int quantos = 801;
     private Pokemon pokemons [] = new Pokemon [quantos];
+
+    // todos os nomes
+    void imprimir_nomes ()
+    {
+        int quantos = this.quantos;
+
+        for (int x = 0; x < quantos; x++)
+            System.out.println (pokemons [x].getNome ());
+    }
 
     // construtor
     public Gerenciador () throws Exception
@@ -61,6 +114,7 @@ class Gerenciador
 
         for (int x = 0; x < quantos; x++)
         {
+            pokemons [x] = new Pokemon ();
             pokemons [x].ler (scanner.nextLine ());
         }
 
@@ -76,5 +130,7 @@ public class Main
     public static void main (String args []) throws Exception
     {
         Gerenciador pokemons = new Gerenciador ();
+
+        pokemons.imprimir_nomes ();
     }
 }
