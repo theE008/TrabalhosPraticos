@@ -1,5 +1,3 @@
-import java.io.File;
-
 /**
  * @date: 11/2024
  * @author: Thiago Pereira de Oliveira
@@ -9,6 +7,9 @@ import java.io.File;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // BIBLIOTECAS
+
+import java.util.Scanner; // não sei fazer scanner do zero ainda
+import java.io.File;     // nem criar arquivos do zero
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // CORE
@@ -25,7 +26,10 @@ class Core
 // classe pokemon
 class Pokemon
 {
-    
+    public void ler (String entrada)
+    {
+        System.out.println (entrada);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,11 +38,13 @@ class Pokemon
 // classe que gerencia pokemons.
 class Gerenciador
 {
+    private static int quantos = 801;
+    private Pokemon pokemons [] = new Pokemon [quantos];
 
     // construtor
-    public Gerenciador ()
+    public Gerenciador () throws Exception
     {
-        File arquivo = new File ("pokemon.csv");
+        File arquivo = new File ("../pokemon.csv");
 
         if (!arquivo.exists ())
         {
@@ -50,7 +56,15 @@ class Gerenciador
             Core.verde = true;
         }
 
-        
+        Scanner scanner = new Scanner (arquivo);
+        scanner.nextLine (); // remover cabeçalho
+
+        for (int x = 0; x < quantos; x++)
+        {
+            pokemons [x].ler (scanner.nextLine ());
+        }
+
+        scanner.close ();
     }
 }
 
@@ -59,8 +73,8 @@ class Gerenciador
 
 public class Main
 {
-    public static void main (String args [])
+    public static void main (String args []) throws Exception
     {
-        
+        Gerenciador pokemons = new Gerenciador ();
     }
 }
