@@ -320,6 +320,45 @@ int Str_para_Int (char* str)
     }
 }
 
+// recebe um digito e o tranforma em char
+char Int_para_char (short unsigned int val)
+{
+    if (val > 9) murder ("Valor muito grande");
+    else
+    return '0' + val;
+}
+
+// conversão para evitar erros
+char* char_para_Str (char in)
+{
+    char* out = reservar_string (2);
+    out [0] =   in;
+    out [1] = '\0';
+
+    return out;
+}
+
+// recebe uma string e a transforma em double
+double Str_para_Dbl (char* str)
+{
+    if (str == null) murder ("Texto inexistente em Str_para_Dbl");
+    else
+    {
+        char** partes = separar (str, '.', null);
+        double resposta = 0;
+
+        // casas depois da virgula;
+        int casas = tamanho (partes [1]);
+
+        resposta  = Str_para_Int (partes [0]);
+        double p2 = Str_para_Int (partes [1]);
+
+        resposta += p2 / (double) potencia (10, casas);
+
+        return resposta;
+    }
+}
+
 // verifica se a string tem um caractere em especifico
 boolean contem_caractere (char* entrada, char carac)
 {
@@ -416,6 +455,45 @@ char* concatenar (char* t1, char* t2)
         tmp [tamfinal] = '\0';
 
         return tmp;
+    }
+}
+
+// recebe um numero e o transforma em string
+char* Int_para_Str (int val)
+{
+    char* resposta;
+
+    if (val != 0)  
+        resposta = concatenar (Int_para_Str (val/10), char_para_Str (Int_para_char (val % 10)));
+    else resposta = "";
+
+    return resposta;
+}
+
+// insere caracteres no inicio se o tamanho nao for o correto
+char* garantir_tamanho (char* entrada, int tam, char carac)
+{
+    if (entrada == null) murder ("Entrada indefinida em garantir tamanho");
+    else
+    {
+        int tama = tamanho (entrada);
+        char* resposta;
+
+        if (tam > tama)
+        {
+            resposta = reservar_string (tam - tama);
+
+            loop ((tam - tama), x)
+            {
+                resposta [x] = carac;
+            }
+        }
+        else
+        {
+            resposta = "";
+        }
+
+        return concatenar (resposta, entrada);
     }
 }
 
@@ -548,6 +626,56 @@ void free_LdSe (ref_Lista_de_String_Estatica lista)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA
+
+// tipo de dado Data
+typedef struct Data
+{
+    int dia;
+    int mes;
+    int ano;
+}
+Data;
+typedef Data* ref_Data;
+
+// construtor
+ref_Data novo_Data (char* texto)
+{
+    ref_Data tmp = reservar (Data, 1);
+    tmp->dia = 0;
+    tmp->mes = 0;
+    tmp->ano = 0;
+
+    if (texto != null)
+    {
+        char** cut = separar (texto, '/', null);
+
+        tmp->dia = Str_para_Int (cut [0]);
+        tmp->mes = Str_para_Int (cut [1]);
+        tmp->ano = Str_para_Int (cut [2]);
+    }
+
+    return tmp;
+}
+
+char* Data_para_Str (ref_Data data)
+{
+    return concatenar( concatenar( concatenar (concatenar (garantir_tamanho (Int_para_Str (data->dia), 2, '0'), "/"), 
+    garantir_tamanho (Int_para_Str (data->mes), 2, '0')), "/"), garantir_tamanho (Int_para_Str (data->ano), 4, '0'));
+}
+
+// destrutor
+void free_Data (ref_Data data)
+{
+    if (data != null)
+    {
+        free (data);
+    }
+    else
+        murder ("Data sendo deletada nao existe");
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // POKEMON
 
 // tipo de dado Pokemon
@@ -559,6 +687,11 @@ typedef struct Pokemon
     ref_String descricao;
     ref_Lista_de_String_Estatica tipos;
     ref_Lista_de_String_Estatica habilidades;
+    double peso;
+    double tamanho;
+    int razao_de_captura;
+    boolean eh_lendario;
+    ref_Data Data_de_captura;
 }
 Pokemon;
 typedef Pokemon* ref_Pokemon;
@@ -574,6 +707,11 @@ ref_Pokemon novo_Pokemon ()
     tmp->descricao = novo_String (null);
     tmp->tipos = novo_LdSe (2);
     tmp->habilidades = novo_LdSe (1);
+    tmp->peso = 0;
+    tmp->tamanho = 0;
+    tmp->razao_de_captura = 0;
+    tmp->eh_lendario = false;
+    tmp->Data_de_captura = novo_Data (null);
 
     return tmp;
 }
@@ -628,6 +766,21 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     char ** corte_2 = separar (trim (corte [2]), ',', &quantos_corte_2);
 
+    // Peso
+    if (tamanho (corte_2 [0])) poke->peso = Str_para_Dbl (corte_2 [0]);
+
+    // Tamanho
+    if (tamanho (corte_2 [1])) poke->tamanho = Str_para_Dbl (corte_2 [1]);
+
+    // Razão
+    poke->razao_de_captura = Str_para_Int (corte_2 [2]);
+
+    // É lendário
+    poke->eh_lendario = Str_para_Int (corte_2 [3]);
+
+    // Data
+    free_Data (poke->Data_de_captura);
+    poke->Data_de_captura = novo_Data (corte_2 [4]);
 }
 
 // destrutor
@@ -725,6 +878,30 @@ void imprimir_habilidades_Gerenciador (ref_Gerenciador gere)
     }
 }
 
+// todos tamanhos
+void imprimir_tamanhos_Gerenciador (ref_Gerenciador gere)
+{
+    int quantos = gere->quantos_pokemons;
+
+    loop (quantos, x)
+    {
+        println ("ID %d", x + 1);
+        println ("%lf", gere->pokemons [x]->tamanho);
+    }
+}
+
+// todas datas
+void imprimir_datas_Gerenciador (ref_Gerenciador gere)
+{
+    int quantos = gere->quantos_pokemons;
+
+    loop (quantos, x)
+    {
+        println ("ID %d", x + 1);
+        println ("%s", Data_para_Str (gere->pokemons [x]->Data_de_captura));
+    }
+}
+
 // destrutor
 void free_Gerenciador (ref_Gerenciador gere)
 {
@@ -745,7 +922,7 @@ void free_Gerenciador (ref_Gerenciador gere)
 int main (void)
 {
     ref_Gerenciador gerenciador = novo_Gerenciador ();
-    imprimir_habilidades_Gerenciador (gerenciador);
+    imprimir_datas_Gerenciador (gerenciador);
 
     // fim
     free_Gerenciador (gerenciador);
