@@ -1,3 +1,10 @@
+/**
+ * @date: 11/2024
+ * @author: Thiago Pereira de Oliveira
+ * @details: Meu código fonte dos TPs para C, onde guardo a base para as futuras atividades
+ * do TP 4.
+*/
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // BIBLIOTECAS
 

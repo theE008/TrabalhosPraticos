@@ -1,0 +1,7 @@
+crie o repositório no git
+clone o repositório para a pasta dedicada a ele
+
+Para atualizar lá,
+git add .
+git commit -m "mensagem"
+git push origin main
