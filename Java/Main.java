@@ -21,6 +21,40 @@ class Core
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+// LISTA DE STRING ESTÁTICA
+
+// definindo a lista de String estática
+class Lista_SE
+{
+    // VARS
+    private String [] lista;
+    private int tamanho = 0;
+    private int x = 0;
+
+    // adicionar
+    public void adicionar (String valor) throws Exception
+    {
+        if (valor == null) throw new Exception ("Valor inexistente em adicionar na LDSE!");
+            else if (x >= tamanho) throw new Exception ("LDSE muito pequena!");
+                else lista [x++] = valor;
+    }
+
+    // imprimir
+    public void imprimir ()
+    {
+        for (int x = 0; x < this.x; x++)
+            System.out.println ("[" + x + "] (tam" + lista [x].length () + ") " + lista [x]);
+    }
+
+    // construtor
+    public Lista_SE (int tamanho)
+    {
+        lista = new String [tamanho];
+        this.tamanho = tamanho;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // POKEMON
 
 // classe pokemon
@@ -31,8 +65,8 @@ class Pokemon
     private int geracao = 0;
     private String nome = "";
     private String descricao = "";
-    //tipos
-    //habilidades
+    private Lista_SE tipos = new Lista_SE (2);
+    private Lista_SE habilidades = new Lista_SE (1);
     private double peso = 0.0;
     private double tamanho = 0.0;
     private int razao_de_captura = 0;
@@ -43,9 +77,12 @@ class Pokemon
     public int getId () {return Id;}
     public int getGeracao () {return  geracao;}
     public String getNome () {return nome;}
+    public String getDescricao () {return descricao;}
+    public Lista_SE getTipos () {return tipos;}
+    public Lista_SE getHabilidades () {return habilidades;}
 
     // Ler uma string para construir o Pokemon
-    public void ler (String entrada)
+    public void ler (String entrada) throws Exception
     {
         int quantas_partes = 0;
         String [] corte = entrada.split ("\"");
@@ -54,6 +91,7 @@ class Pokemon
         int quantos_corte_0 = 0;
 
         String [] corte_0 = corte [0].replaceAll ("^,+|,+$", "").split (",");
+        quantos_corte_0 = corte_0.length;
 
         // Id
         this.Id = Integer.parseInt (corte_0 [0]);
@@ -65,6 +103,23 @@ class Pokemon
         this.nome = corte_0 [2];
 
         // Descrição
+        this.descricao = corte_0 [3];
+
+        // Tipos
+        this.tipos.adicionar (corte_0 [4]);
+        if (quantos_corte_0 == 6)
+        this.tipos.adicionar (corte_0 [5]);
+
+        // --- habilidades (corte [1])
+        int quantos_corte_1 = 0;
+
+        String [] corte_1 = corte [1].replaceAll("[\\['\\]']", "").split (", ");
+        quantos_corte_1 = corte_1.length;
+
+        this.habilidades = new Lista_SE (quantos_corte_1);
+
+        for (int x = 0; x < quantos_corte_1; x++)
+            this.habilidades.adicionar (corte_1 [x]);
 
     }
 
@@ -92,6 +147,30 @@ class Gerenciador
 
         for (int x = 0; x < quantos; x++)
             System.out.println (pokemons [x].getNome ());
+    }
+
+    // todos os tipos
+    void imprimir_tipos ()
+    {
+        int quantos = this.quantos;
+
+        for (int x = 0; x < quantos; x++)
+        {
+            System.out.println ("\nID " + (x+1));
+            pokemons [x].getTipos ().imprimir ();
+        }
+    }
+
+    // todas habilidades
+    void imprimir_habilidades ()
+    {
+        int quantos = this.quantos;
+
+        for (int x = 0; x < quantos; x++)
+        {
+            System.out.println ("\nID " + (x+1));
+            pokemons [x].getHabilidades ().imprimir ();
+        }
     }
 
     // construtor
@@ -131,6 +210,6 @@ public class Main
     {
         Gerenciador pokemons = new Gerenciador ();
 
-        pokemons.imprimir_nomes ();
+        pokemons.imprimir_habilidades ();
     }
 }
