@@ -8,8 +8,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // BIBLIOTECAS
 
-import java.io.File; // não sei fazer arquivos do zero ainda
-import java.util.Scanner;     // nem criar scanners do zero
+import java.util.Scanner;     // não sei criar scanners do zero
+import java.io.File;         // nem fazer arquivos do zero ainda
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // CORE
@@ -55,6 +55,34 @@ class Lista_SE
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA
+
+// tipo de dado Data
+class Data
+{
+    // VARS
+    private int dia = 0;
+    private int mes = 0;
+    private int ano = 0;
+
+    // converte Data para String
+    public String para_String ()
+    {
+        return ((dia > 9)?"":"0") + dia + "/" + ((mes > 9)?"":"0") + mes + "/" + ano;
+    }
+
+    // construtor
+    public Data (String texto)
+    {
+        String [] cut = texto.split ("/");
+
+        dia = Integer.parseInt (cut [0]);
+        mes = Integer.parseInt (cut [1]);
+        ano = Integer.parseInt (cut [2]);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // POKEMON
 
 // classe pokemon
@@ -71,7 +99,7 @@ class Pokemon
     private double tamanho = 0.0;
     private int razao_de_captura = 0;
     private boolean eh_lendario = false;
-    //data
+    private Data Data_de_captura = new Data ("0/0/0");
 
     // GETS
     public int getId () {return Id;}
@@ -80,11 +108,16 @@ class Pokemon
     public String getDescricao () {return descricao;}
     public Lista_SE getTipos () {return tipos;}
     public Lista_SE getHabilidades () {return habilidades;}
+    public double getPeso () {return peso;}
+    public double getTamanho () {return tamanho;}
+    public int getRazao_de_captura () {return razao_de_captura;}
+    public boolean getEh_lendario () {return eh_lendario;}
+    public Data getData_de_captura () {return Data_de_captura;}
 
     // Ler uma string para construir o Pokemon
     public void ler (String entrada) throws Exception
     {
-        int quantas_partes = 0;
+        //int quantas_partes = 0;
         String [] corte = entrada.split ("\"");
 
         // --- parte antes de habilidades (corte [0])
@@ -121,12 +154,26 @@ class Pokemon
         for (int x = 0; x < quantos_corte_1; x++)
             this.habilidades.adicionar (corte_1 [x]);
 
-    }
+        // --- outros (corte [2])
+        //int quantos_corte_2 = 0;
+        corte [2] = corte [2].substring (1);
 
-    // construtor
-    public Pokemon ()
-    {
+        String [] corte_2 = corte [2].split (",");
 
+        // Peso
+        if (corte_2 [0].length () != 0) this.peso = Double.parseDouble (corte_2 [0]);
+
+        // Tamanho
+        if (corte_2 [1].length () != 0) this.tamanho = Double.parseDouble (corte_2 [1]);
+
+        // Razão
+        this.razao_de_captura = Integer.parseInt (corte_2 [2]);
+
+        // É lendário
+        this.eh_lendario = (corte_2 [3].equals ("1"))?true:false;
+
+        // Data
+        this.Data_de_captura = new Data (corte_2 [4]);
     }
 }
 
@@ -137,7 +184,7 @@ class Pokemon
 class Gerenciador
 {
     // VARS
-    private static int quantos = 801;
+    private int quantos = 801;
     private Pokemon pokemons [] = new Pokemon [quantos];
 
     // todos os nomes
@@ -170,6 +217,30 @@ class Gerenciador
         {
             System.out.println ("\nID " + (x+1));
             pokemons [x].getHabilidades ().imprimir ();
+        }
+    }
+
+    // todos tamanhos
+    void imprimir_tamanhos ()
+    {
+        int quantos = this.quantos;
+
+        for (int x = 0; x < quantos; x++)
+        {
+            System.out.println ("\nID " + (x+1));
+            System.out.println (this.pokemons [x].getTamanho ());
+        }
+    }
+
+    // todas datas
+    void imprimir_datas ()
+    {
+        int quantos = this.quantos;
+
+        for (int x = 0; x < quantos; x++)
+        {
+            System.out.println ("\nID " + (x+1));
+            System.out.println (this.pokemons [x].getData_de_captura ().para_String ());
         }
     }
 
@@ -210,6 +281,6 @@ public class Main
     {
         Gerenciador pokemons = new Gerenciador ();
 
-        pokemons.imprimir_habilidades ();
+        pokemons.imprimir_datas ();
     }
 }

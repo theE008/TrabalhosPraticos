@@ -665,9 +665,10 @@ ref_Data novo_Data (char* texto)
     return tmp;
 }
 
+// converte data para String
 char* Data_para_Str (ref_Data data)
 {
-    return concatenar( concatenar( concatenar (concatenar (garantir_tamanho (Int_para_Str (data->dia), 2, '0'), "/"), 
+    return concatenar (concatenar (concatenar (concatenar (garantir_tamanho (Int_para_Str (data->dia), 2, '0'), "/"), 
     garantir_tamanho (Int_para_Str (data->mes), 2, '0')), "/"), garantir_tamanho (Int_para_Str (data->ano), 4, '0'));
 }
 
