@@ -12,6 +12,14 @@
 
 #include <stdlib.h> // para o malloc
 #include <stdio.h> // para o printf
+#include <time.h> // para clock
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// CONTAR COMPARAÇÕES
+
+// substitui o if para uma versão que conta comparações. Alterações abaixo também, no QOL
+#define IF(comp) if(comp && (++comparacoes))
+long long int comparacoes = 0.0;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // QOL
@@ -24,10 +32,10 @@
 if (!verde) printf ("\n\tDebug reached line %d\n", __LINE__)
 
 // for simplificado
-#define loop(quantas_vezes,var) for(int var = 0; var < quantas_vezes; var++)
+#define loop(quantas_vezes,var) for(int var = 0; var < quantas_vezes && (++comparacoes); var++)
 
 // else if
-#define elif else if
+#define elif(comp) else if(comp && (++comparacoes))
 
 // usando o null do java
 #define null NULL
@@ -82,7 +90,7 @@ void colorir (char* text, char* background)
     int texto = 37;
     int fundo = 40;
 
-    if   (eh_igual (text, "negrito"     )) texto =  1;
+    IF   (eh_igual (text, "negrito"     )) texto =  1;
     elif (eh_igual (text, "sublinhado"  )) texto =  4;
     elif (eh_igual (text, "preto"       )) texto = 30;
     elif (eh_igual (text, "vermelho"    )) texto = 31;
@@ -93,7 +101,7 @@ void colorir (char* text, char* background)
     elif (eh_igual (text, "ciano"       )) texto = 36;
     elif (eh_igual (text, "branco"      )) texto = 37;
 
-    if   (eh_igual (background, "preto"         )) fundo = 40;
+    IF   (eh_igual (background, "preto"         )) fundo = 40;
     elif (eh_igual (background, "vermelho"      )) fundo = 41;
     elif (eh_igual (background, "verde"         )) fundo = 42;
     elif (eh_igual (background, "amarelo"       )) fundo = 43;
@@ -109,7 +117,7 @@ void colorir (char* text, char* background)
 void mensagem_colorida (char* mensagem, char* cor, boolean importante)
 {
     colorir (cor, "preto");
-    if (importante) important (mensagem);
+    IF (importante) important (mensagem);
     else less_important (mensagem);
     colorir ("branco", "preto");
 }
@@ -125,7 +133,7 @@ void murder (char* entrada)
 // Informação, não aparece se enviado no verde
 void informar (char* entrada, char* cor, boolean importante)
 {
-    if (!verde) mensagem_colorida (entrada, cor, importante);
+    IF (!verde) mensagem_colorida (entrada, cor, importante);
 }
 
 // malloc mais seguro
@@ -133,7 +141,7 @@ void* reservar_espaco_funcao (size_t Size)
 {
     void* try = malloc (Size);
 
-    if (try != null)
+    IF (try != null)
     return try;
     else
     {
@@ -144,7 +152,7 @@ void* reservar_espaco_funcao (size_t Size)
 // calloc
 char* reservar_string (size_t quantos)
 {
-    if (quantos <= 0) murder ("Alocando memoria nula");
+    IF (quantos <= 0) murder ("Alocando memoria nula");
     char* tmp = (char*) reservar_espaco_funcao (quantos);
 
     loop (quantos, x) tmp [x] = '*';
@@ -156,7 +164,7 @@ char* reservar_string (size_t quantos)
 char* proxima_linha (FILE* arquivo)
 {
     char *saida = reservar (char, 500);
-    if (fscanf (arquivo, "%[^\n]\n", saida) != 1) murder ("Arquivo lido alem da conta");
+    IF (fscanf (arquivo, "%[^\n]\n", saida) != 1) murder ("Arquivo lido alem da conta");
 
     return saida;
 }
@@ -179,7 +187,7 @@ int potencia (int a, int b)
 // Retorna a quantia de caracteres presente em uma string.
 int tamanho (char* entrada)
 {
-    if (entrada == null) murder ("Impossivel pegar tamanho de string inexistente");
+    IF (entrada == null) murder ("Impossivel pegar tamanho de string inexistente");
     else
     {
         int resposta = 0;
@@ -196,11 +204,11 @@ boolean eh_igual (char* t1, char* t2)
     int tam1 = tamanho (t1);
     boolean resposta = true;
 
-    if (tam1 != tamanho (t2)) resposta = false;
+    IF (tam1 != tamanho (t2)) resposta = false;
     else
     {
         for (int x = 0; x < tam1 && resposta; x++)
-            if (t1 [x] != t2 [x]) resposta = false;
+            IF (t1 [x] != t2 [x]) resposta = false;
     }
 
     return resposta;
@@ -211,7 +219,7 @@ int copiar_texto (char* t1, char* t2)
 {
     int x = 0;
 
-    if (tamanho (t1) >= tamanho (t2))
+    IF (tamanho (t1) >= tamanho (t2))
     {
         char c = '*';
 
@@ -232,13 +240,13 @@ int copiar_texto (char* t1, char* t2)
 // Quantas vezes um caractere em específico aparece na string
 int contar_um_caractere (char* texto, char carac)
 {
-    if (texto == null) murder ("Texto inexistente em contar um caractere");
+    IF (texto == null) murder ("Texto inexistente em contar um caractere");
     else
     {
         int tam = tamanho (texto);
         int resposta = 0;
 
-        loop (tam, x) if (texto [x] == carac) resposta++;
+        loop (tam, x) IF (texto [x] == carac) resposta++;
 
         return resposta;
     }
@@ -247,7 +255,7 @@ int contar_um_caractere (char* texto, char carac)
 // Split para C
 char** separar (char* texto, char carac, int *saida_de_quantos)
 {
-    if (texto == null) murder ("Texto inexistente em separar");
+    IF (texto == null) murder ("Texto inexistente em separar");
     else
     {
         int quantos = contar_um_caractere (texto, carac) + 1;
@@ -264,7 +272,7 @@ char** separar (char* texto, char carac, int *saida_de_quantos)
 
         loop (tam, x)
         {
-            if (texto [x] == carac)
+            IF (texto [x] == carac)
             {
                 resposta [index][y] = '\0';
                 index++;
@@ -278,7 +286,7 @@ char** separar (char* texto, char carac, int *saida_de_quantos)
 
         resposta [index][y] = '\0';
 
-        if (saida_de_quantos != null) *saida_de_quantos = quantos; 
+        IF (saida_de_quantos != null) *saida_de_quantos = quantos; 
         return resposta;
     }
 }
@@ -299,7 +307,7 @@ void imprimir_partes (char* texto, char separador)
 // parseInt de 1 caractere
 unsigned short int char_para_Int (char carac)
 {
-    if ('0' <= carac && carac <= '9')
+    IF ('0' <= carac && carac <= '9')
     {
         return carac - '0';
     }
@@ -310,7 +318,7 @@ unsigned short int char_para_Int (char carac)
 // parseInt
 int Str_para_Int (char* str)
 {
-    if (str == null) murder ("Texto inexistente em Str_para_Int");
+    IF (str == null) murder ("Texto inexistente em Str_para_Int");
     else
     {
         int tam = tamanho (str);
@@ -330,7 +338,7 @@ int Str_para_Int (char* str)
 // recebe um digito e o tranforma em char
 char Int_para_char (short unsigned int val)
 {
-    if (val > 9) murder ("Valor muito grande");
+    IF (val > 9) murder ("Valor muito grande");
     else
     return '0' + val;
 }
@@ -348,7 +356,7 @@ char* char_para_Str (char in)
 // recebe uma string e a transforma em double
 double Str_para_Dbl (char* str)
 {
-    if (str == null) murder ("Texto inexistente em Str_para_Dbl");
+    IF (str == null) murder ("Texto inexistente em Str_para_Dbl");
     else
     {
         char** partes = separar (str, '.', null);
@@ -369,14 +377,14 @@ double Str_para_Dbl (char* str)
 // verifica se a string tem um caractere em especifico
 boolean contem_caractere (char* entrada, char carac)
 {
-    if (entrada == null) murder ("Entrada invalida em contem caractere");
+    IF (entrada == null) murder ("Entrada invalida em contem caractere");
     else
     {
         int tam = tamanho (entrada);
         boolean resposta = false;
 
         for (int x = 0; x < tam && !resposta; x++) 
-            if (entrada [x] == carac)
+            IF (entrada [x] == carac)
                 resposta = true;
         
         return resposta;
@@ -386,7 +394,7 @@ boolean contem_caractere (char* entrada, char carac)
 // remove espaços do inicio e do final se existirem
 char* trim (char* entrada)
 {
-    if (entrada == null) murder ("Trim com entrada invalida");
+    IF (entrada == null) murder ("Trim com entrada invalida");
     else
     {
         int tam = tamanho (entrada);
@@ -395,16 +403,16 @@ char* trim (char* entrada)
 
         loop ((tam - 1), x)
         {
-            if (x == 0)
+            IF (x == 0)
             {
-                if (entrada [0] != ' ')
+                IF (entrada [0] != ' ')
                 saida [y++] = entrada [x];
             }
             else
             saida [y++] = entrada [x];
         }
 
-        if (entrada [tam - 1] == ' ')
+        IF (entrada [tam - 1] == ' ')
         saida [y] = '\0';
         else
         {
@@ -419,7 +427,7 @@ char* trim (char* entrada)
 // Remove os caracteres presentes na segunda string de dentro da primeira e retorna
 char* remover_caracteres (char* texto, char* remocoes)
 {
-    if (texto == null || remocoes == null) murder ("Entradas invalidas em remover caracteres");
+    IF (texto == null || remocoes == null) murder ("Entradas invalidas em remover caracteres");
     else
     {
         int tam = tamanho (texto);
@@ -428,7 +436,7 @@ char* remover_caracteres (char* texto, char* remocoes)
 
         loop (tam, x)
         {
-            if (!contem_caractere (remocoes, texto [x]))
+            IF (!contem_caractere (remocoes, texto [x]))
             {
                 resposta [index++] = texto [x];
             }
@@ -443,7 +451,7 @@ char* remover_caracteres (char* texto, char* remocoes)
 // Concatenar
 char* concatenar (char* t1, char* t2)
 {
-    if (t1 == null || t2 == null) murder ("Texto inexistente em concatenar");
+    IF (t1 == null || t2 == null) murder ("Texto inexistente em concatenar");
     else
     {
         int tam1 = tamanho (t1);
@@ -470,7 +478,7 @@ char* Int_para_Str (int val)
 {
     char* resposta;
 
-    if (val != 0)  
+    IF (val != 0)  
         resposta = concatenar (Int_para_Str (val/10), char_para_Str (Int_para_char (val % 10)));
     else resposta = "";
 
@@ -480,13 +488,13 @@ char* Int_para_Str (int val)
 // insere caracteres no inicio se o tamanho nao for o correto
 char* garantir_tamanho (char* entrada, int tam, char carac)
 {
-    if (entrada == null) murder ("Entrada indefinida em garantir tamanho");
+    IF (entrada == null) murder ("Entrada indefinida em garantir tamanho");
     else
     {
         int tama = tamanho (entrada);
         char* resposta;
 
-        if (tam > tama)
+        IF (tam > tama)
         {
             resposta = reservar_string (tam - tama);
 
@@ -522,7 +530,7 @@ ref_String novo_String (char* entrada)
 {
     ref_String tmp = reservar (String, 1);
 
-    if (entrada == null)
+    IF (entrada == null)
     {
         tmp->texto = reservar (char, 1);
         tmp->tamanho = 0;
@@ -542,7 +550,7 @@ ref_String novo_String (char* entrada)
 // alterar
 void alterar_String (String **str, char* texto)
 {
-    if (str == null || texto == null)
+    IF (str == null || texto == null)
         murder ("Valor inexistente em alterar String");
     {
         free_String (*str);
@@ -554,7 +562,7 @@ void alterar_String (String **str, char* texto)
 // destrutor
 void free_String (ref_String str)
 {
-    if (str != null)
+    IF (str != null)
     {
         free (str->texto);
 
@@ -598,7 +606,7 @@ ref_Lista_de_String_Estatica novo_LdSe (int tamanho)
 // adicionar
 void adicionar_na_LdSe (ref_Lista_de_String_Estatica lista, ref_String valor)
 {
-    if (lista == null || valor == null) murder ("Valor inexistente em adicionar na LDSE");
+    IF (lista == null || valor == null) murder ("Valor inexistente em adicionar na LDSE");
         elif (lista->x >= lista->tamanho) murder ("LdSe muito pequena");
             else lista->lista [lista->x++] = valor;
 }
@@ -606,7 +614,7 @@ void adicionar_na_LdSe (ref_Lista_de_String_Estatica lista, ref_String valor)
 // imprime todos os elementos
 void imprimir_LdSe (ref_Lista_de_String_Estatica lista)
 {
-    if (lista == null) murder ("Lista inexistente em impressao");
+    IF (lista == null) murder ("Lista inexistente em impressao");
 
     loop (lista->x, x)
     {
@@ -619,7 +627,7 @@ void imprimir_LdSe (ref_Lista_de_String_Estatica lista)
 // destrutor
 void free_LdSe (ref_Lista_de_String_Estatica lista)
 {
-    if (lista != null)
+    IF (lista != null)
     {
         loop (lista->tamanho, x)
         {
@@ -653,7 +661,7 @@ ref_Data novo_Data (char* texto)
     tmp->mes = 0;
     tmp->ano = 0;
 
-    if (texto != null)
+    IF (texto != null)
     {
         char** cut = separar (texto, '/', null);
 
@@ -675,7 +683,7 @@ char* Data_para_Str (ref_Data data)
 // destrutor
 void free_Data (ref_Data data)
 {
-    if (data != null)
+    IF (data != null)
     {
         free (data);
     }
@@ -735,7 +743,7 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     int tam = tamanho (corte [0]);
     corte [0] [tam - 1] = '\0';
-    if (corte [0] [tam - 2] == ',')
+    IF (corte [0] [tam - 2] == ',')
     corte [0] [tam - 2] = '\0';
 
     char ** corte_0 = separar (corte [0], ',', &quantos_corte_0);
@@ -754,7 +762,7 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 
     // Tipos
     adicionar_na_LdSe (poke->tipos, novo_String (corte_0 [4]));
-    if (quantos_corte_0 == 6) 
+    IF (quantos_corte_0 == 6) 
     adicionar_na_LdSe (poke->tipos, novo_String (corte_0 [5]));
 
     // --- habilidades (corte [1])
@@ -775,10 +783,10 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
     char ** corte_2 = separar (trim (corte [2]), ',', &quantos_corte_2);
 
     // Peso
-    if (tamanho (corte_2 [0])) poke->peso = Str_para_Dbl (corte_2 [0]);
+    IF (tamanho (corte_2 [0])) poke->peso = Str_para_Dbl (corte_2 [0]);
 
     // Tamanho
-    if (tamanho (corte_2 [1])) poke->tamanho = Str_para_Dbl (corte_2 [1]);
+    IF (tamanho (corte_2 [1])) poke->tamanho = Str_para_Dbl (corte_2 [1]);
 
     // Razão
     poke->razao_de_captura = Str_para_Int (corte_2 [2]);
@@ -794,7 +802,7 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 // destrutor
 void free_Pokemon (ref_Pokemon poke)
 {
-    if (poke != null)
+    IF (poke != null)
     {
         free_String (poke->descricao);
         free_LdSe   (poke->tipos);
@@ -812,6 +820,7 @@ void free_Pokemon (ref_Pokemon poke)
 // tipo de dado Gerenciador
 typedef struct Gerenciador
 {
+    clock_t tempo_inicial;
     int quantos_pokemons;
     Pokemon **pokemons;
 }
@@ -822,15 +831,16 @@ typedef Gerenciador* ref_Gerenciador;
 ref_Gerenciador novo_Gerenciador ()
 {
     ref_Gerenciador tmp = reservar (Gerenciador, 1);
+    tmp->tempo_inicial = clock (); 
     int quantos_pokemons = 801;
 
     FILE* arquivo = fopen ("../pokemon.csv", "rt");
 
-    if (arquivo == null)
+    IF (arquivo == null)
     {
         arquivo = fopen ("/tmp/pokemon.csv", "rt");
 
-        if (arquivo == null) murder ("Arquivo CSV inexistente.");
+        IF (arquivo == null) murder ("Arquivo CSV inexistente.");
 
         verde = true;
     }
@@ -913,11 +923,18 @@ void imprimir_datas_Gerenciador (ref_Gerenciador gere)
 // destrutor
 void free_Gerenciador (ref_Gerenciador gere)
 {
-    if (gere != null)
+    IF (gere != null)
     {
         loop (gere->quantos_pokemons, x)
             free_Pokemon (gere->pokemons [x]);
 
+        double tempo_total = ((double) (clock () - gere->tempo_inicial))/CLOCKS_PER_SEC;
+
+        FILE* arquivo = fopen ("Matricula.txt", "wt");
+
+        fprintf (arquivo, "Matricula: 835251 \tTempo de execucao (em ms): %lf\tComparacoes: %d", tempo_total, comparacoes);
+
+        fclose (arquivo);
         free (gere);
     }
     else
@@ -929,6 +946,7 @@ void free_Gerenciador (ref_Gerenciador gere)
 
 int main (void)
 {
+    // inicio
     ref_Gerenciador gerenciador = novo_Gerenciador ();
     imprimir_datas_Gerenciador (gerenciador);
 

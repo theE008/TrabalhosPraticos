@@ -31,7 +31,7 @@ class Core
         // espero não ser essencial escrever o resto, porque não tô a fim
         File arquivo = new File ("Matrícula.txt"); 
         PrintWriter escritor = new PrintWriter (arquivo);
-        escritor.print("Matricula: 835251 \t Tempo de execução (em ms): " + tempo_de_execucao + "\tComparações: " + comparacoes);
+        escritor.print("Matricula: 835251 \tTempo de execução (em ms): " + tempo_de_execucao + "\tComparações: " + comparacoes);
         escritor.close ();
     }
 }
