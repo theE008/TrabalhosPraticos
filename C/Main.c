@@ -53,6 +53,9 @@ typedef enum { false = 0, true = 1 } boolean;
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // CORE
 
+int razao_de_malloc = 0; // Para garantir que tudo foi liberado na memória.
+#define limpar(val) if(val!=null){razao_de_malloc--; free(val); val = null;}
+
 boolean eh_igual (char* t1, char* t2);
 boolean verde = false;
 
@@ -113,7 +116,7 @@ void colorir (char* text, char* background)
     printf ("\033[%d;%dm",texto, fundo);
 }
 
-// mensagem colorida
+// Mensagem colorida
 void mensagem_colorida (char* mensagem, char* cor, boolean importante)
 {
     colorir (cor, "preto");
@@ -136,10 +139,11 @@ void informar (char* entrada, char* cor, boolean importante)
     IF (!verde) mensagem_colorida (entrada, cor, importante);
 }
 
-// malloc mais seguro
+// Malloc mais seguro
 void* reservar_espaco_funcao (size_t Size)
 {
     void* try = malloc (Size);
+    razao_de_malloc++;
 
     IF (try != null)
     return try;
@@ -164,7 +168,14 @@ char* reservar_string (size_t quantos)
 char* proxima_linha (FILE* arquivo)
 {
     char *saida = reservar (char, 500);
-    IF (fscanf (arquivo, "%[^\n]\n", saida) != 1) murder ("Arquivo lido alem da conta");
+    IF (arquivo != null)
+    {
+        IF (fscanf (arquivo, "%[^\n]\n", saida) != 1)
+        {murder ("Arquivo lido alem da conta");}
+    }
+    else   
+    IF (scanf ("%[^\n]\n", saida) != 1)
+        {murder ("Input incorreto do usuario");}
 
     return saida;
 }
@@ -210,6 +221,19 @@ boolean eh_igual (char* t1, char* t2)
         for (int x = 0; x < tam1 && resposta; x++)
             IF (t1 [x] != t2 [x]) resposta = false;
     }
+
+    return resposta;
+}
+
+// Compara duas strings
+int comparar (char* t1, char* t2)
+{
+    int resposta = 0;
+    int tam1 = tamanho (t1);
+    int tam2 = tamanho (t2);
+    int tam  = (tam1 > tam2)?tam2:tam1;
+
+    for (int x = 0; x <= tam && !resposta; x++) resposta = t2 [x] - t1 [x];
 
     return resposta;
 }
@@ -512,6 +536,21 @@ char* garantir_tamanho (char* entrada, int tam, char carac)
     }
 }
 
+// Avisa o que tá sobrando de lixo na memória
+void objetos_restantes ()
+{
+    informar 
+    (
+        concatenar
+        (
+            "Lixo de memoria: ",
+            Int_para_Str (razao_de_malloc)
+        ),
+        "amarelo",
+        false
+    );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // STRING
 
@@ -564,9 +603,11 @@ void free_String (ptr_String str)
 {
     IF (str != null)
     {
-        free (str->texto);
+        boolean gambito = (str->texto != null);
+        
+        limpar (str->texto);
 
-        free (str);
+        if (gambito) limpar (str);
     }
     else
         murder ("String sendo deletado nao existe");
@@ -634,7 +675,7 @@ void free_LdSe (ptr_Lista_de_String_Estatica lista)
             free_String (lista->lista [x]);
         }
         
-        free (lista);
+        limpar (lista);
     }
     else
         murder ("Lista sendo deletada nao existe");
@@ -685,7 +726,7 @@ void free_Data (ptr_Data data)
 {
     IF (data != null)
     {
-        free (data);
+        limpar (data);
     }
     else
         murder ("Data sendo deletada nao existe");
@@ -809,7 +850,7 @@ void free_Pokemon (ptr_Pokemon poke)
         free_LdSe   (poke->tipos);
         free_String (poke->nome);
         
-        free (poke);
+        limpar (poke);
     }   
 }
 
@@ -935,7 +976,7 @@ void free_Gerenciador (ptr_Gerenciador gere)
         fprintf (arquivo, "Matricula: 835251 \tTempo de execucao (em ms): %lf\tComparacoes: %d", tempo_total, comparacoes);
 
         fclose (arquivo);
-        free (gere);
+        limpar (gere);
     }
 }
 
@@ -944,15 +985,15 @@ void free_Gerenciador (ptr_Gerenciador gere)
 
 // Tipo de dado da célula duplamente encadeada. Tanto para listas quanto para árvores
 typedef struct CelulaDuplaStr CelulaDuplaStr;
+typedef CelulaDuplaStr* ptr_CelulaDuplaStr;
 struct CelulaDuplaStr
 {
-    CelulaDuplaStr* esq;
-    CelulaDuplaStr* dir;
+    ptr_CelulaDuplaStr esq;
+    ptr_CelulaDuplaStr dir;
     ptr_String valor;
 
     int quantidade; // aparicoes do valor na estrutura
 };
-typedef CelulaDuplaStr* ptr_CelulaDuplaStr;
 
 // construtor
 ptr_CelulaDuplaStr novo_CelulaDuplaStr (ptr_String valor)
@@ -975,13 +1016,121 @@ void free_CelulaDuplaStr (ptr_CelulaDuplaStr cel)
     {
         free_String (cel->valor);
 
-        free (cel);
+        limpar (cel);
+    }
+}
+
+// destrutor completo do tipo de dado
+void freeAll_CelulaDuplaStr (ptr_CelulaDuplaStr cel)
+{
+    IF (cel != null)
+    {
+        freeAll_CelulaDuplaStr (cel->esq);
+        freeAll_CelulaDuplaStr (cel->dir);
+        
+        free_String (cel->valor);
+
+        limpar (cel);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // ÁRVORE BINÁRIA DE PESQUISA DE STRING
 
+// Tipo de dado árvore
+typedef struct ArvBinPesqStr
+{
+    ptr_CelulaDuplaStr raiz;
+}
+ArvBinPesqStr;
+typedef ArvBinPesqStr* ptr_ArvBinPesqStr;
+
+// construtor
+ptr_ArvBinPesqStr novo_ArvBinPesqStr ()
+{
+    ptr_ArvBinPesqStr tmp = reservar (ArvBinPesqStr, 1);
+    tmp->raiz = null;
+    return tmp;
+}
+
+// pesquisar
+ptr_CelulaDuplaStr pesVerbRec_ArvBinPesqStr (char* valor, ptr_CelulaDuplaStr cel)
+{
+    ptr_CelulaDuplaStr tmp = null;
+
+    IF (cel == null)
+    {
+        println (" NAO");
+        tmp = null;
+    }
+    else
+    {
+        int comparacao = comparar (valor, cel->valor->texto);
+
+        IF (comparacao < 0)
+        {
+            printf (" dir"); // tá invertido. NÃO SEI PORQUE! SÓ ASSIM FUNCIONA!
+
+            pesVerbRec_ArvBinPesqStr (valor, cel->esq);
+        }
+        elif (comparacao > 0)
+        {
+            printf (" esq"); // Mas quem sou eu pra mexer em time que tá ganhando?
+            
+            pesVerbRec_ArvBinPesqStr (valor, cel->dir);
+        }
+        else
+        {
+            println (" SIM");
+            tmp = cel;
+        }
+    }
+
+    return tmp;
+}
+ptr_CelulaDuplaStr pesquisarVerbosamente_ArvBinPesqStr (ptr_ArvBinPesqStr arv, char* valor)
+{
+    printf ("%s\n=>raiz", valor);
+    return pesVerbRec_ArvBinPesqStr (valor, arv->raiz);
+}
+
+// adicionar
+ptr_CelulaDuplaStr adicionarRecursivo_ArvBinPesqStr (ptr_String valor, ptr_CelulaDuplaStr cel)
+{
+    ptr_CelulaDuplaStr tmp = cel;
+
+    IF (cel == null) tmp = novo_CelulaDuplaStr (valor);
+    else
+    {
+        int comparacao = comparar (valor->texto, cel->valor->texto);
+        
+        IF   (comparacao < 0) cel->esq = adicionarRecursivo_ArvBinPesqStr (valor, cel->esq);
+        elif (comparacao > 0) cel->dir = adicionarRecursivo_ArvBinPesqStr (valor, cel->dir);
+        else    
+        {
+            cel->quantidade++;
+            tmp = cel;
+        }
+    }
+
+    return tmp;
+}
+void adicionar_ArvBinPesqStr (ptr_ArvBinPesqStr arv, ptr_String valor)
+{
+    arv->raiz = adicionarRecursivo_ArvBinPesqStr (valor, arv->raiz);
+}
+
+// destrutor
+void free_ArvBinPesqStr (ptr_ArvBinPesqStr arv)
+{
+    IF (arv == null) murder ("ArvBinPesqStr sendo deletado nao existe");
+    else
+    {
+        freeAll_CelulaDuplaStr (arv->raiz);
+
+        limpar (arv);
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN
@@ -989,11 +1138,38 @@ void free_CelulaDuplaStr (ptr_CelulaDuplaStr cel)
 int main (void)
 {
     // inicio
-    ptr_Gerenciador gerenciador = novo_Gerenciador ();
-    imprimir_datas_Gerenciador (gerenciador);
+    ptr_ArvBinPesqStr arvore     = novo_ArvBinPesqStr ();
+    ptr_Gerenciador gerenciador  = novo_Gerenciador   ();
+
+    char* entrada = proxima_linha (null);
+
+    while (!eh_igual (entrada, "FIM"))
+    {
+        int valor = Str_para_Int (entrada);
+
+        ptr_String nome = gerenciador->pokemons [valor - 1]->nome;
+
+        adicionar_ArvBinPesqStr (arvore, nome);
+
+        entrada = proxima_linha (null);
+    }
+
+    entrada = proxima_linha (null);
+
+    while (!eh_igual (entrada, "FIM"))
+    {
+        pesquisarVerbosamente_ArvBinPesqStr (arvore, entrada);
+
+        entrada = proxima_linha (null);
+    }
 
     // fim
     free_Gerenciador (gerenciador);
+    free_ArvBinPesqStr (arvore);
+
     informar ("Programa finalizado com sucesso", "verde", true);
+    objetos_restantes (); 
+    //         Está dando output de 44366 não liberados. O que é intenso para dizer no mínimo.
+    // Preciso testar depois onde tá indo essa memória (ou se o método de contagem tá de boa).
     return 0;
 }
