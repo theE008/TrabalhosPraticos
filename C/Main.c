@@ -522,13 +522,13 @@ typedef struct String
     int tamanho;
 }
 String;
-typedef String* ref_String;
-void free_String (ref_String str); 
+typedef String* ptr_String;
+void free_String (ptr_String str); 
 
 // construtor
-ref_String novo_String (char* entrada)
+ptr_String novo_String (char* entrada)
 {
-    ref_String tmp = reservar (String, 1);
+    ptr_String tmp = reservar (String, 1);
 
     IF (entrada == null)
     {
@@ -560,7 +560,7 @@ void alterar_String (String **str, char* texto)
 }
 
 // destrutor
-void free_String (ref_String str)
+void free_String (ptr_String str)
 {
     IF (str != null)
     {
@@ -583,17 +583,17 @@ typedef struct Lista_de_String_Estatica
     int    tamanho;
 }
 Lista_de_String_Estatica;
-typedef Lista_de_String_Estatica* ref_Lista_de_String_Estatica;
+typedef Lista_de_String_Estatica* ptr_Lista_de_String_Estatica;
 
 // construtor
-ref_Lista_de_String_Estatica novo_LdSe (int tamanho)
+ptr_Lista_de_String_Estatica novo_LdSe (int tamanho)
 {
-    ref_Lista_de_String_Estatica tmp = reservar (Lista_de_String_Estatica, 1);
+    ptr_Lista_de_String_Estatica tmp = reservar (Lista_de_String_Estatica, 1);
 
     tmp->tamanho = tamanho;
     tmp->x = 0;
 
-    tmp->lista = reservar (ref_String, tamanho);
+    tmp->lista = reservar (ptr_String, tamanho);
 
     loop (tamanho, x)
     {
@@ -604,7 +604,7 @@ ref_Lista_de_String_Estatica novo_LdSe (int tamanho)
 }
 
 // adicionar
-void adicionar_na_LdSe (ref_Lista_de_String_Estatica lista, ref_String valor)
+void adicionar_na_LdSe (ptr_Lista_de_String_Estatica lista, ptr_String valor)
 {
     IF (lista == null || valor == null) murder ("Valor inexistente em adicionar na LDSE");
         elif (lista->x >= lista->tamanho) murder ("LdSe muito pequena");
@@ -612,7 +612,7 @@ void adicionar_na_LdSe (ref_Lista_de_String_Estatica lista, ref_String valor)
 }
 
 // imprime todos os elementos
-void imprimir_LdSe (ref_Lista_de_String_Estatica lista)
+void imprimir_LdSe (ptr_Lista_de_String_Estatica lista)
 {
     IF (lista == null) murder ("Lista inexistente em impressao");
 
@@ -625,7 +625,7 @@ void imprimir_LdSe (ref_Lista_de_String_Estatica lista)
 }
 
 // destrutor
-void free_LdSe (ref_Lista_de_String_Estatica lista)
+void free_LdSe (ptr_Lista_de_String_Estatica lista)
 {
     IF (lista != null)
     {
@@ -651,12 +651,12 @@ typedef struct Data
     int ano;
 }
 Data;
-typedef Data* ref_Data;
+typedef Data* ptr_Data;
 
 // construtor
-ref_Data novo_Data (char* texto)
+ptr_Data novo_Data (char* texto)
 {
-    ref_Data tmp = reservar (Data, 1);
+    ptr_Data tmp = reservar (Data, 1);
     tmp->dia = 0;
     tmp->mes = 0;
     tmp->ano = 0;
@@ -674,14 +674,14 @@ ref_Data novo_Data (char* texto)
 }
 
 // converte data para String
-char* Data_para_Str (ref_Data data)
+char* Data_para_Str (ptr_Data data)
 {
     return concatenar (concatenar (concatenar (concatenar (garantir_tamanho (Int_para_Str (data->dia), 2, '0'), "/"), 
     garantir_tamanho (Int_para_Str (data->mes), 2, '0')), "/"), garantir_tamanho (Int_para_Str (data->ano), 4, '0'));
 }
 
 // destrutor
-void free_Data (ref_Data data)
+void free_Data (ptr_Data data)
 {
     IF (data != null)
     {
@@ -699,23 +699,23 @@ typedef struct Pokemon
 {
     int Id;
     int geracao;
-    ref_String nome;
-    ref_String descricao;
-    ref_Lista_de_String_Estatica tipos;
-    ref_Lista_de_String_Estatica habilidades;
+    ptr_String nome;
+    ptr_String descricao;
+    ptr_Lista_de_String_Estatica tipos;
+    ptr_Lista_de_String_Estatica habilidades;
     double peso;
     double tamanho;
     int razao_de_captura;
     boolean eh_lendario;
-    ref_Data Data_de_captura;
+    ptr_Data Data_de_captura;
 }
 Pokemon;
-typedef Pokemon* ref_Pokemon;
+typedef Pokemon* ptr_Pokemon;
 
 // construtor
-ref_Pokemon novo_Pokemon ()
+ptr_Pokemon novo_Pokemon ()
 {
-    ref_Pokemon tmp = reservar (Pokemon, 1);
+    ptr_Pokemon tmp = reservar (Pokemon, 1);
 
     tmp->Id = 0;
     tmp->geracao = 0;
@@ -733,7 +733,7 @@ ref_Pokemon novo_Pokemon ()
 }
 
 // ler
-void ler_Pokemon (ref_Pokemon poke, char* texto)
+void ler_Pokemon (ptr_Pokemon poke, char* texto)
 {
     int quantas_partes = 0;
     char ** corte = separar (texto, '"', &quantas_partes);
@@ -800,18 +800,17 @@ void ler_Pokemon (ref_Pokemon poke, char* texto)
 }
 
 // destrutor
-void free_Pokemon (ref_Pokemon poke)
+void free_Pokemon (ptr_Pokemon poke)
 {
-    IF (poke != null)
+    IF (poke == null) murder ("Pokemon sendo deletado nao existe");
+    else
     {
         free_String (poke->descricao);
         free_LdSe   (poke->tipos);
         free_String (poke->nome);
         
         free (poke);
-    }
-    else
-        murder ("Pokemon sendo deletado nao existe");
+    }   
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,12 +824,12 @@ typedef struct Gerenciador
     Pokemon **pokemons;
 }
 Gerenciador;
-typedef Gerenciador* ref_Gerenciador;
+typedef Gerenciador* ptr_Gerenciador;
 
 // construtor 
-ref_Gerenciador novo_Gerenciador ()
+ptr_Gerenciador novo_Gerenciador ()
 {
-    ref_Gerenciador tmp = reservar (Gerenciador, 1);
+    ptr_Gerenciador tmp = reservar (Gerenciador, 1);
     tmp->tempo_inicial = clock (); 
     int quantos_pokemons = 801;
 
@@ -845,7 +844,7 @@ ref_Gerenciador novo_Gerenciador ()
         verde = true;
     }
 
-    tmp->pokemons = reservar (ref_Pokemon, quantos_pokemons);
+    tmp->pokemons = reservar (ptr_Pokemon, quantos_pokemons);
     tmp->quantos_pokemons = quantos_pokemons;
 
     proxima_linha (arquivo);
@@ -862,7 +861,7 @@ ref_Gerenciador novo_Gerenciador ()
 }
 
 // todos os nomes
-void imprimir_nomes_Gerenciador (ref_Gerenciador gere)
+void imprimir_nomes_Gerenciador (ptr_Gerenciador gere)
 {
     int quantos = gere->quantos_pokemons;
 
@@ -873,7 +872,7 @@ void imprimir_nomes_Gerenciador (ref_Gerenciador gere)
 }
 
 // todos os tipos
-void imprimir_tipos_Gerenciador (ref_Gerenciador gere)
+void imprimir_tipos_Gerenciador (ptr_Gerenciador gere)
 {
     int quantos = gere->quantos_pokemons;
 
@@ -885,7 +884,7 @@ void imprimir_tipos_Gerenciador (ref_Gerenciador gere)
 }
 
 // todas as habilidades
-void imprimir_habilidades_Gerenciador (ref_Gerenciador gere)
+void imprimir_habilidades_Gerenciador (ptr_Gerenciador gere)
 {
     int quantos = gere->quantos_pokemons;
 
@@ -897,7 +896,7 @@ void imprimir_habilidades_Gerenciador (ref_Gerenciador gere)
 }
 
 // todos tamanhos
-void imprimir_tamanhos_Gerenciador (ref_Gerenciador gere)
+void imprimir_tamanhos_Gerenciador (ptr_Gerenciador gere)
 {
     int quantos = gere->quantos_pokemons;
 
@@ -909,7 +908,7 @@ void imprimir_tamanhos_Gerenciador (ref_Gerenciador gere)
 }
 
 // todas datas
-void imprimir_datas_Gerenciador (ref_Gerenciador gere)
+void imprimir_datas_Gerenciador (ptr_Gerenciador gere)
 {
     int quantos = gere->quantos_pokemons;
 
@@ -921,9 +920,10 @@ void imprimir_datas_Gerenciador (ref_Gerenciador gere)
 }
 
 // destrutor
-void free_Gerenciador (ref_Gerenciador gere)
+void free_Gerenciador (ptr_Gerenciador gere)
 {
-    IF (gere != null)
+    IF (gere == null) murder ("Gerenciador sendo deletado nao existe");
+    else
     {
         loop (gere->quantos_pokemons, x)
             free_Pokemon (gere->pokemons [x]);
@@ -937,9 +937,51 @@ void free_Gerenciador (ref_Gerenciador gere)
         fclose (arquivo);
         free (gere);
     }
-    else
-        murder ("Gerenciador sendo deletado nao existe");
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// CÉLULA DUPLA STRING
+
+// Tipo de dado da célula duplamente encadeada. Tanto para listas quanto para árvores
+typedef struct CelulaDuplaStr CelulaDuplaStr;
+struct CelulaDuplaStr
+{
+    CelulaDuplaStr* esq;
+    CelulaDuplaStr* dir;
+    ptr_String valor;
+
+    int quantidade; // aparicoes do valor na estrutura
+};
+typedef CelulaDuplaStr* ptr_CelulaDuplaStr;
+
+// construtor
+ptr_CelulaDuplaStr novo_CelulaDuplaStr (ptr_String valor)
+{
+    ptr_CelulaDuplaStr tmp = reservar (CelulaDuplaStr, 1);
+
+    tmp->esq = null;
+    tmp->dir = null;
+    tmp->valor = valor;
+    tmp->quantidade = 1;
+
+    return tmp;
+}
+
+// destrutor
+void free_CelulaDuplaStr (ptr_CelulaDuplaStr cel)
+{
+    IF (cel == null) murder ("CelulaDuplastr sendo deletado nao existe");
+    else
+    {
+        free_String (cel->valor);
+
+        free (cel);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// ÁRVORE BINÁRIA DE PESQUISA DE STRING
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN
@@ -947,7 +989,7 @@ void free_Gerenciador (ref_Gerenciador gere)
 int main (void)
 {
     // inicio
-    ref_Gerenciador gerenciador = novo_Gerenciador ();
+    ptr_Gerenciador gerenciador = novo_Gerenciador ();
     imprimir_datas_Gerenciador (gerenciador);
 
     // fim

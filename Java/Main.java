@@ -302,7 +302,7 @@ class CelulaDuplaStr
     public CelulaDuplaStr dir = null;
     public String valor = ""; 
 
-    public int quantidade = 1; // valores extra de utilidade
+    public int quantidade = 1; // aparicoes do valor na estrutura
 
     // construtor
     public CelulaDuplaStr (String valor)
