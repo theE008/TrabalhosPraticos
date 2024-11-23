@@ -90,12 +90,14 @@ void status_da_memoria ()
     IF    (verde ==  0) 
     printf
     (
-        "\n%s: %d\n%s: %d\n%s: %d\n%s\n%s: %d\n\n",
-        "Comparos feitos", recomparacoes,
-        "Reservas feitas", reservas_feitas,
-        "Limpezas feitas", limpezas_feitas,
-        "---------------------",
-        "Lixo de memoria", razao
+        "\n\t%s\n\t%s: %d%s\n\t%s: %d%s\n\t%s: %d%s\n\t%s\n\t%s: %d%s\n\t%s\n\n",
+        "+---------------------------------------+",
+        "|Comparos feitos",recomparacoes, "  \t\t|",
+        "|Reservas feitas",reservas_feitas,"\t\t\t|",
+        "|Limpezas feitas",limpezas_feitas,"\t\t\t|",
+        ">---------------------------------------<",
+        "|Lixo de memoria", razao,        "\t\t\t|",
+        "+---------------------------------------+"
     );
 
     colorir ("branco"  , "preto");
@@ -1287,42 +1289,6 @@ int main (void)
 {
     system ("cls");
 
-    ptr_String s = novo_String ("oi");
-    alterar_String (&s, "ola");
-
-    ptr_String s2 = novo_String ("oito");
-    ptr_Lista_de_String_Estatica l = novo_LdSe (1);
-    adicionar_na_LdSe (l, s2);
-
-    ptr_Data d = novo_Data ("23/11/2024");
-    char* teste = Data_para_Str (d);
-
-    ptr_Gerenciador g = novo_Gerenciador ();
-
-    ptr_String s3 = novo_String ("tres");
-    ptr_CelulaDuplaStr c = novo_CelulaDuplaStr (s3);
-
-    ptr_String s4 = novo_String ("44");
-    ptr_ArvBinPesqStr a = novo_ArvBinPesqStr ();
-    adicionar_ArvBinPesqStr (a, s4);
-
-    ptr_Pokemon p = novo_Pokemon ();
-    ler_Pokemon (p, "65,1,Alakazam,Psi Pokémon,psychic,,\"['Synchronize', 'Inner Focus', 'Magic Guard']\",48.0,1.5,50,0,01/05/1996");
-    
-    free_String (s);
-    free_LdSe (l);
-    free_Data (d);
-    limpar (teste);
-    free_Pokemon (p);
-    free_Gerenciador (g);
-    freeAll_CelulaDuplaStr (c);
-    free_ArvBinPesqStr (a);
-
-    status_da_memoria ();
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    // BARREIRA DE VERIFICAÇÃO DE FUNCIONAMENTO
-
     // inicio
     ptr_ArvBinPesqStr arvore     = novo_ArvBinPesqStr ();
     ptr_Gerenciador gerenciador  = novo_Gerenciador   ();
@@ -1359,7 +1325,7 @@ int main (void)
     free_ArvBinPesqStr (arvore);
     limpar (entrada);
 
-    informar ("Programa finalizado com sucesso", "verde", true);
+    informar ("Programa finalizado com sucesso!", "verde", true);
     status_da_memoria ();
     return 0;
 }
