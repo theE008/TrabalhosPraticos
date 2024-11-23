@@ -1027,13 +1027,16 @@ ptr_Gerenciador novo_Gerenciador ()
     tmp->pokemons = reservar (ptr_Pokemon, quantos_pokemons);
     tmp->quantos_pokemons = quantos_pokemons;
 
-    proxima_linha (arquivo);
+    char* lixo = proxima_linha (arquivo); limpar (lixo);
 
     loop (quantos_pokemons, x)
     {
         tmp->pokemons [x] = novo_Pokemon ();
-        
-        ler_Pokemon (tmp->pokemons [x], proxima_linha (arquivo));
+
+        char* linha = proxima_linha (arquivo);
+        ler_Pokemon (tmp->pokemons [x], linha);
+
+        limpar (linha); // 879 alocações lixo de memória -> 77 alocações lixo de memória
     }
 
     fclose (arquivo);
@@ -1095,7 +1098,9 @@ void imprimir_datas_Gerenciador (ptr_Gerenciador gere)
     loop (quantos, x)
     {
         println ("ID %d", x + 1);
-        println ("%s", Data_para_Str (gere->pokemons [x]->Data_de_captura));
+        char* ptr = Data_para_Str (gere->pokemons [x]->Data_de_captura);
+        println ("%s", ptr);
+        limpar (ptr);
     }
 }
 
@@ -1107,6 +1112,8 @@ void free_Gerenciador (ptr_Gerenciador gere)
     {
         loop (gere->quantos_pokemons, x)
             free_Pokemon (gere->pokemons [x]);
+
+        limpar (gere->pokemons);
 
         double tempo_total = ((double) (clock () - gere->tempo_inicial))/CLOCKS_PER_SEC;
 
@@ -1216,7 +1223,7 @@ ptr_CelulaDuplaStr pesVerbRec_ArvBinPesqStr (char* valor, ptr_CelulaDuplaStr cel
         }
         elif (comparacao > 0)
         {
-            printf (" esq"); // Mas quem sou eu pra mexer em time que tá ganhando?
+            printf (" esq"); // Quem sou eu pra mexer em time que tá ganhando?
             
             pesVerbRec_ArvBinPesqStr (valor, cel->dir);
         }
@@ -1267,9 +1274,7 @@ void free_ArvBinPesqStr (ptr_ArvBinPesqStr arv)
     IF (arv == null) murder ("ArvBinPesqStr sendo deletado nao existe");
     else
     {
-        
         freeAll_CelulaDuplaStr (arv->raiz);
-
 
         limpar (arv);
     }
@@ -1292,6 +1297,15 @@ int main (void)
     ptr_Data d = novo_Data ("23/11/2024");
     char* teste = Data_para_Str (d);
 
+    ptr_Gerenciador g = novo_Gerenciador ();
+
+    ptr_String s3 = novo_String ("tres");
+    ptr_CelulaDuplaStr c = novo_CelulaDuplaStr (s3);
+
+    ptr_String s4 = novo_String ("44");
+    ptr_ArvBinPesqStr a = novo_ArvBinPesqStr ();
+    adicionar_ArvBinPesqStr (a, s4);
+
     ptr_Pokemon p = novo_Pokemon ();
     ler_Pokemon (p, "65,1,Alakazam,Psi Pokémon,psychic,,\"['Synchronize', 'Inner Focus', 'Magic Guard']\",48.0,1.5,50,0,01/05/1996");
     
@@ -1300,6 +1314,9 @@ int main (void)
     free_Data (d);
     limpar (teste);
     free_Pokemon (p);
+    free_Gerenciador (g);
+    freeAll_CelulaDuplaStr (c);
+    free_ArvBinPesqStr (a);
 
     status_da_memoria ();
 
@@ -1320,15 +1337,20 @@ int main (void)
 
         adicionar_ArvBinPesqStr (arvore, nome);
 
+        limpar (entrada); // 77 lixos -> 26 lixos
         entrada = proxima_linha (null);
     }
-
+    
+    limpar (entrada); // 26 lixos -> 25 lixos
     entrada = proxima_linha (null);
 
     while (!eh_igual (entrada, "FIM"))
     {
         pesquisarVerbosamente_ArvBinPesqStr (arvore, entrada);
 
+        limpar (entrada); // 25 lixos -> 0!!!*** lixos!!!
+        // consegui limpar totalmente a memória! nenhum malloc ficou desresolvido
+        // vou tirar um tempo para apreciar essa conquista :D
         entrada = proxima_linha (null);
     }
 
