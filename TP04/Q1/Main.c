@@ -22,14 +22,10 @@
 long long int comparacoes = 0.0;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// BOOLEAN & NÚMEROS NATURAIS
-
-typedef unsigned int nat; // numeros naturais
-
-typedef enum { false = 0, true = 1 } boolean;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
 // QOL
+
+// malloc mais simples/seguro
+#define reservar(tipo,quantos) (tipo*) reservar_espaco_funcao (quantos*sizeof (tipo)); 
 
 // cria uma linha fácil de ver e remover que printa o número da linha onde está
 #define DEBUGLINE_DEBUGLINE_DEBUGLINE_DEBUGLINE_DEBUGLINE \
@@ -47,64 +43,21 @@ if (!verde) printf ("\n\tDebug reached line %d\n", __LINE__)
 // println
 #define println(...) printf (__VA_ARGS__); printf ("\n");
 
-// guarda o fato de se está no site verde ou não
-boolean verde = false;
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// CONTROLE DE MEMÓRIA
+// BOOLEAN & NÚMEROS NATURAIS
 
-// coisas ainda não definidas
-void colorir (char* text, char* background);
-void murder (char* entrada);
+typedef unsigned int nat; // numeros naturais
 
-// malloc mais simples/seguro/contabilizado
-#define reservar(tipo,quantos) (tipo*) reservar_espaco_funcao (quantos*sizeof (tipo)); 
-
-// Free mais seguro/contabilizado
-int reservas_feitas = 0; // Para garantir que tudo foi liberado na memória.
-int limpezas_feitas = 0;
-#define limpar(val) if(val!=null && limpezas_feitas++){free(val); val = null;}
-
-// Malloc mais seguro
-void* reservar_espaco_funcao (size_t Size)
-{
-    void* try = malloc (Size);
-    reservas_feitas++;
-
-    IF (try == null) 
-        murder ("Erro ao criar espaco");
-    else return try;
-}
-
-// Avisa o que tá sobrando de lixo na memória
-int quantas_chamadas = 0; // para remover o calculo dos IFs dessa função
-void status_da_memoria ()
-{
-    int razao = reservas_feitas - limpezas_feitas;
-    int recomparacoes = comparacoes - 19 * quantas_chamadas++;
-
-    IF    (razao ==  0) colorir ("verde"   , "preto");
-    elif  (razao <= 10) colorir ("amarelo" , "preto");
-    else                colorir ("vermelho", "preto");
-    
-    IF    (verde ==  0) 
-    printf
-    (
-        "\n%s: %d\n%s: %d\n%s: %d\n%s\n%s: %d\n\n",
-        "Comparos feitos", recomparacoes,
-        "Reservas feitas", reservas_feitas,
-        "Limpezas feitas", limpezas_feitas,
-        "---------------------",
-        "Lixo de memoria", razao
-    );
-
-    colorir ("branco"  , "preto");
-}
+typedef enum { false = 0, true = 1 } boolean;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // CORE
 
+int razao_de_malloc = 0; // Para garantir que tudo foi liberado na memória.
+#define limpar(val) if(val!=null && razao_de_malloc--){free(val); val = null;}
+
 boolean eh_igual (char* t1, char* t2);
+boolean verde = false;
 
 // Texto levemente destacado.
 void important (char* entrada)
@@ -184,6 +137,20 @@ void murder (char* entrada)
 void informar (char* entrada, char* cor, boolean importante)
 {
     IF (!verde) mensagem_colorida (entrada, cor, importante);
+}
+
+// Malloc mais seguro
+void* reservar_espaco_funcao (size_t Size)
+{
+    void* try = malloc (Size);
+    razao_de_malloc++;
+
+    IF (try != null)
+    return try;
+    else
+    {
+        murder ("Erro ao criar espaco");
+    }
 }
 
 // calloc
@@ -416,8 +383,7 @@ double Str_para_Dbl (char* str)
     IF (str == null) murder ("Texto inexistente em Str_para_Dbl");
     else
     {
-        int quantas = 0;
-        char** partes = separar (str, '.', &quantas);
+        char** partes = separar (str, '.', null);
         double resposta = 0;
 
         // casas depois da virgula;
@@ -427,22 +393,6 @@ double Str_para_Dbl (char* str)
         double p2 = Str_para_Int (partes [1]);
 
         resposta += p2 / (double) potencia (10, casas);
-
-        IF (partes != null && quantas == 2 && partes [0] != null && partes [1] != null)
-        {
-            loop (quantas, x)
-            {
-                limpar (partes [x]);
-            }
-            //limpar (partes); <<<< remover essa linha dá um erro em judas perdeu as botas no código
-            // não entendi porque, não acho que a eficiência que isso me daria vale realmente a pena 
-            // o sofrimento mental que passei por isto, então estou apostentando essa por enquanto.
-
-            limpezas_feitas++; // <- APENAS PARA SABER QUANTO EU GANHARIA COM ISSO, NÃO TEM UMA LIMPEZA AQUI AINDA!
-
-            // 2400 lixo de memoria -> 880
-        }
-        else murder ("Algo de errado aconteceu em str para dbl");
 
         return resposta;
     }
@@ -546,33 +496,6 @@ char* concatenar (char* t1, char* t2)
         return tmp;
     }
 }
-char* conc_3 (char* t1, char* t2, char* t3)
-{
-    char* a = concatenar (t1, t2);
-    char* b = concatenar (a, t3);
-
-    limpar (a);
-
-    return b;
-}
-char* conc_4 (char* t1, char* t2, char* t3, char* t4)
-{
-    char* a = conc_3 (t1, t2, t3);
-    char* b = concatenar (a, t4);
-
-    limpar (a);
-
-    return b;
-}
-char* conc_5 (char* t1, char* t2, char* t3, char* t4, char* t5)
-{
-    char* a = conc_4 (t1, t2, t3, t4);
-    char* b = concatenar (a, t5);
-
-    limpar (a);
-
-    return b;
-}
 
 // recebe um numero e o transforma em string
 char* Int_para_Str (int val)
@@ -580,20 +503,8 @@ char* Int_para_Str (int val)
     char* resposta;
 
     IF (val != 0)  
-    {
-        char* esquerda = Int_para_Str (val/10);
-        char* digito_f = char_para_Str (Int_para_char (val % 10));
-
-        resposta = concatenar (esquerda, digito_f);
-
-        limpar (esquerda);
-        limpar (digito_f);
-    }
-    else
-    {
-        resposta = reservar_string (1);
-        resposta [0] = '\0';
-    }
+        resposta = concatenar (Int_para_Str (val/10), char_para_Str (Int_para_char (val % 10)));
+    else resposta = "";
 
     return resposta;
 }
@@ -625,6 +536,21 @@ char* garantir_tamanho (char* entrada, int tam, char carac)
     }
 }
 
+// Avisa o que tá sobrando de lixo na memória
+void objetos_restantes ()
+{
+    informar 
+    (
+        concatenar
+        (
+            "Lixo de memoria: ",
+            Int_para_Str (razao_de_malloc)
+        ),
+        "amarelo",
+        false
+    );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // STRING
 
@@ -638,7 +564,7 @@ String;
 typedef String* ptr_String;
 void free_String (ptr_String str); 
 
-// construtor (duas reservas)
+// construtor
 ptr_String novo_String (char* entrada)
 {
     ptr_String tmp = reservar (String, 1);
@@ -661,12 +587,13 @@ ptr_String novo_String (char* entrada)
 }
 
 // alterar
-void alterar_String (ptr_String *str, char* texto)
+void alterar_String (String **str, char* texto)
 {
     IF (str == null || texto == null)
         murder ("Valor inexistente em alterar String");
     {
         free_String (*str);
+        *str = reservar (String, 1);
         *str = novo_String (texto);
     }
 }
@@ -678,10 +605,9 @@ void free_String (ptr_String str)
     {
         boolean gambito = (str->texto != null); // sacrifico uma comparação em troca do funcionamento
         
-        if (gambito) limpar (str->texto);
-        
+        limpar (str->texto);
+
         if (gambito) limpar (str);
-        
     }
     else
         murder ("String sendo deletado nao existe");
@@ -700,7 +626,7 @@ typedef struct Lista_de_String_Estatica
 Lista_de_String_Estatica;
 typedef Lista_de_String_Estatica* ptr_Lista_de_String_Estatica;
 
-// construtor (2 reservas + string*tamanho reservas) = 2 + 2*tam res
+// construtor
 ptr_Lista_de_String_Estatica novo_LdSe (int tamanho)
 {
     ptr_Lista_de_String_Estatica tmp = reservar (Lista_de_String_Estatica, 1);
@@ -723,11 +649,7 @@ void adicionar_na_LdSe (ptr_Lista_de_String_Estatica lista, ptr_String valor)
 {
     IF (lista == null || valor == null) murder ("Valor inexistente em adicionar na LDSE");
         elif (lista->x >= lista->tamanho) murder ("LdSe muito pequena");
-            else
-            {
-                free_String (lista->lista [lista->x]); // reduziu a produção de lixo para 34k
-                lista->lista [lista->x++] = valor;
-            }
+            else lista->lista [lista->x++] = valor;
 }
 
 // imprime todos os elementos
@@ -752,8 +674,6 @@ void free_LdSe (ptr_Lista_de_String_Estatica lista)
         {
             free_String (lista->lista [x]);
         }
-
-        limpar (lista->lista);
         
         limpar (lista);
     }
@@ -789,11 +709,6 @@ ptr_Data novo_Data (char* texto)
         tmp->dia = Str_para_Int (cut [0]);
         tmp->mes = Str_para_Int (cut [1]);
         tmp->ano = Str_para_Int (cut [2]);
-
-        limpar (cut [0]); // reduziu a produção de lixo para 31k 
-        limpar (cut [1]);
-        limpar (cut [2]);
-        limpar (cut    );
     }
 
     return tmp;
@@ -802,25 +717,8 @@ ptr_Data novo_Data (char* texto)
 // converte data para String
 char* Data_para_Str (ptr_Data data)
 {
-    char* diastr = Int_para_Str (data->dia);
-    char* messtr = Int_para_Str (data->mes);
-    char* anostr = Int_para_Str (data->ano);
-
-    char* diagrt = garantir_tamanho (diastr, 2, '0');
-    char* mesgrt = garantir_tamanho (messtr, 2, '0');
-    char* anogrt = garantir_tamanho (anostr, 4, '0');
-
-    char* resposta = conc_5 (diagrt, "/", mesgrt, "/", anogrt);
-
-    limpar (diastr);
-    limpar (messtr);
-    limpar (anostr);
-
-    limpar (diagrt);
-    limpar (mesgrt);
-    limpar (anogrt);
-
-    return resposta;
+    return concatenar (concatenar (concatenar (concatenar (garantir_tamanho (Int_para_Str (data->dia), 2, '0'), "/"), 
+    garantir_tamanho (Int_para_Str (data->mes), 2, '0')), "/"), garantir_tamanho (Int_para_Str (data->ano), 4, '0'));
 }
 
 // destrutor
@@ -911,26 +809,19 @@ void ler_Pokemon (ptr_Pokemon poke, char* texto)
     // --- habilidades (corte [1])
     int quantos_corte_1 = 0;
 
-    char* removidos = remover_caracteres (corte [1], "[]'");
-    char ** corte_1 = separar (removidos, ',', &quantos_corte_1);
+    char ** corte_1 = separar (remover_caracteres (corte [1], "[]'"), ',', &quantos_corte_1);
 
     free_LdSe (poke->habilidades);
     poke->habilidades = novo_LdSe (quantos_corte_1);
 
     loop (quantos_corte_1, x)
-    {
-        char* aparado = trim (corte_1 [x]);
-        adicionar_na_LdSe (poke->habilidades, novo_String (aparado));
-
-        limpar (aparado); //8k -> 6k
-    }
+    adicionar_na_LdSe (poke->habilidades, novo_String (trim (corte_1 [x])));
 
     // --- outros (corte [2])
     int quantos_corte_2 = 0;
     corte [2] [0] = ' ';
 
-    char* aparado = trim (corte [2]);
-    char ** corte_2 = separar (aparado, ',', &quantos_corte_2);
+    char ** corte_2 = separar (trim (corte [2]), ',', &quantos_corte_2);
 
     // Peso
     IF (tamanho (corte_2 [0])) poke->peso = Str_para_Dbl (corte_2 [0]);
@@ -947,34 +838,6 @@ void ler_Pokemon (ptr_Pokemon poke, char* texto)
     // Data
     free_Data (poke->Data_de_captura);
     poke->Data_de_captura = novo_Data (corte_2 [4]);
-
-    // liberação (isso vai demorar)
-    loop (quantas_partes, x)
-    {
-        limpar (corte [x]); // 25k de lixo -> 21k de lixo
-    }
-    limpar (corte);
-
-    loop (quantos_corte_0, x)
-    {
-        limpar (corte_0 [x]); // 21k de lixo -> 16k de lixo
-    }
-    limpar (corte_0);
-
-    loop (quantos_corte_1, x)
-    {
-        limpar (corte_1 [x]); // 21k de lixo -> 16k de lixo
-    }
-    limpar (corte_1);
-
-    loop (quantos_corte_2, x)
-    {
-        limpar (corte_2 [x]); // 16k de lixo -> 9k de lixo! (diminuiu exponencialmente, no inicio era 44k)
-    }
-    limpar (corte_2);
-
-    limpar (removidos); // 9k -> 8k
-    limpar (aparado); // 6k -> 5k
 }
 
 // destrutor
@@ -983,11 +846,9 @@ void free_Pokemon (ptr_Pokemon poke)
     IF (poke == null) murder ("Pokemon sendo deletado nao existe");
     else
     {
-        free_String (poke->nome);
         free_String (poke->descricao);
         free_LdSe   (poke->tipos);
-        free_LdSe   (poke->habilidades);
-        free_Data   (poke->Data_de_captura);
+        free_String (poke->nome);
         
         limpar (poke);
     }   
@@ -1164,13 +1025,11 @@ void freeAll_CelulaDuplaStr (ptr_CelulaDuplaStr cel)
 {
     IF (cel != null)
     {
-        
         freeAll_CelulaDuplaStr (cel->esq);
-        
         freeAll_CelulaDuplaStr (cel->dir);
         
-        if (cel->valor != null) free_String (cel->valor);
-        
+        free_String (cel->valor);
+
         limpar (cel);
     }
 }
@@ -1267,9 +1126,7 @@ void free_ArvBinPesqStr (ptr_ArvBinPesqStr arv)
     IF (arv == null) murder ("ArvBinPesqStr sendo deletado nao existe");
     else
     {
-        
         freeAll_CelulaDuplaStr (arv->raiz);
-
 
         limpar (arv);
     }
@@ -1280,32 +1137,6 @@ void free_ArvBinPesqStr (ptr_ArvBinPesqStr arv)
 
 int main (void)
 {
-    system ("cls");
-
-    ptr_String s = novo_String ("oi");
-    alterar_String (&s, "ola");
-
-    ptr_String s2 = novo_String ("oito");
-    ptr_Lista_de_String_Estatica l = novo_LdSe (1);
-    adicionar_na_LdSe (l, s2);
-
-    ptr_Data d = novo_Data ("23/11/2024");
-    char* teste = Data_para_Str (d);
-
-    ptr_Pokemon p = novo_Pokemon ();
-    ler_Pokemon (p, "65,1,Alakazam,Psi Pokémon,psychic,,\"['Synchronize', 'Inner Focus', 'Magic Guard']\",48.0,1.5,50,0,01/05/1996");
-    
-    free_String (s);
-    free_LdSe (l);
-    free_Data (d);
-    limpar (teste);
-    free_Pokemon (p);
-
-    status_da_memoria ();
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    // BARREIRA DE VERIFICAÇÃO DE FUNCIONAMENTO
-
     // inicio
     ptr_ArvBinPesqStr arvore     = novo_ArvBinPesqStr ();
     ptr_Gerenciador gerenciador  = novo_Gerenciador   ();
@@ -1335,9 +1166,10 @@ int main (void)
     // fim
     free_Gerenciador (gerenciador);
     free_ArvBinPesqStr (arvore);
-    limpar (entrada);
 
     informar ("Programa finalizado com sucesso", "verde", true);
-    status_da_memoria ();
+    objetos_restantes (); 
+    //         Está dando output de 44366 não liberados. O que é intenso para dizer no mínimo.
+    // Preciso testar depois onde tá indo essa memória (ou se o método de contagem tá de boa).
     return 0;
 }
