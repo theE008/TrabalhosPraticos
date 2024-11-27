@@ -368,6 +368,10 @@ class ArvoreBinariaDePesquisaStr
         System.out.print (valor + "\n=>raiz");
         return pesquisar_verbosamente (valor, raiz);
     }
+    public CelulaDuplaStr pesquisar_verbosamente_semCitarRaiz (String valor)
+    {
+        return pesquisar_verbosamente (valor, raiz);
+    }
     private CelulaDuplaStr pesquisar_verbosamente (String valor, CelulaDuplaStr celula)
     {
         CelulaDuplaStr tmp = null;
@@ -470,7 +474,7 @@ class ArvoreBinariaDePesquisaStrArvore
     // pesquisar
     public CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda)
     {
-        System.out.print (valor + "\n=>raiz");
+        System.out.print ("\t=>" + segunda + "\nraiz");
         return pesquisar_verbosamente_Preordem_binario (valor, segunda, raiz);
     }
     private CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda, CelulaDuplaStrArvore celula)
@@ -480,7 +484,7 @@ class ArvoreBinariaDePesquisaStrArvore
 
         if (celula != null)
         {
-            if (celula.valor.equals (valor)) tmp = celula.arvore.pesquisar_verbosamente (segunda);
+            if (celula.valor.equals (valor)) tmp = celula.arvore.pesquisar_verbosamente_semCitarRaiz (segunda);
             else tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.esq);
 
             if (tmp == null) tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.dir);
