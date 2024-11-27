@@ -379,7 +379,7 @@ class ArvoreBinariaDePesquisaStr
 
         if (celula == null)
         {
-            System.out.println (" NAO");
+            //System.out.println (" NAO\n");
             tmp = null;
         }
         else
@@ -398,7 +398,7 @@ class ArvoreBinariaDePesquisaStr
             }
             else    
             {
-                System.out.println (" SIM");
+                //System.out.println (" SIM\n");
                 tmp = celula;
             } 
         }
@@ -475,19 +475,37 @@ class ArvoreBinariaDePesquisaStrArvore
     public CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda)
     {
         System.out.print ("\t=>" + segunda + "\nraiz");
-        return pesquisar_verbosamente_Preordem_binario (valor, segunda, raiz);
+        CelulaDuplaStr cel = pesquisar_verbosamente_Preordem_binario (valor, segunda, raiz);
+
+        if (cel != null) System.out.println (" SIM"); else System.out.println (" NAO");
+
+        return cel;
     }
     private CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda, CelulaDuplaStrArvore celula)
     {
         CelulaDuplaStr tmp = null;
-        Core.comparacoes += 2;
+        Core.comparacoes += 3;
 
         if (celula != null)
         {
-            if (celula.valor.equals (valor)) tmp = celula.arvore.pesquisar_verbosamente_semCitarRaiz (segunda);
-            else tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.esq);
+            if (celula.valor.equals (valor)) 
+            {
+                //System.out.print (" SIM\n");
+                tmp = celula.arvore.pesquisar_verbosamente_semCitarRaiz (segunda);
+            }
+            else 
+            {
+                System.out.print (" ESQ");
+                tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.esq);
+            }
 
-            if (tmp == null) tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.dir);
+            if (tmp == null) 
+            {
+                System.out.print (" DIR");
+                tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.dir);
+
+                //if (tmp == null) System.out.print (" NAO\n");
+            }
         }
 
         return tmp;
