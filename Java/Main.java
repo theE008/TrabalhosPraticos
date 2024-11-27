@@ -205,6 +205,21 @@ class Gerenciador
 
     // GETS
     public Pokemon getPokemon (int Id) {return pokemons [Id - 1];}
+    public Pokemon getPokemon (String nome) 
+    {
+        Pokemon resp = null;
+
+        for (int x = 0; x < 801; x++)
+        {
+            if (pokemons [x].getNome ().equals (nome))
+            {
+                resp = pokemons [x];
+                x = 801;
+            }
+        }
+
+        return resp;
+    }
 
     // todos os nomes
     public void imprimir_nomes ()
@@ -389,17 +404,106 @@ class ArvoreBinariaDePesquisaStr
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+// CÉLULA DUPLA STRING COM ÁRVORE
+
+// Tipo de dado da célula duplamente encadeada com árvore. Tanto para listas quanto para árvores
+class CelulaDuplaStrArvore
+{
+    // VARS
+    public ArvoreBinariaDePesquisaStr arvore = new ArvoreBinariaDePesquisaStr ();
+    public CelulaDuplaStrArvore esq = null;
+    public CelulaDuplaStrArvore dir = null;
+    public String valor = ""; 
+
+    public int quantidade = 1; // aparicoes do valor na estrutura
+
+    // construtor
+    public CelulaDuplaStrArvore (String valor)
+    {
+        this.valor = valor;
+
+    }
+    // construtor / entrada para a segunda arvore também
+    public CelulaDuplaStrArvore (String valor, String segunda)
+    {
+        this.arvore.adicionar (segunda);
+        this.valor = valor;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// ÁRVORE BINÁRIA DE PESQUISA
+
+// Tipo de dado Árvore Binária de pesquisa com String
+class ArvoreBinariaDePesquisaStrArvore
+{
+    // VARS
+    private CelulaDuplaStrArvore raiz = null;
+
+    // adicionar // chave do primeiro e valor do segundo
+    public void adicionar (String valor, String segunda)
+    {
+        raiz = adicionar (valor, segunda, raiz);
+    }    
+    private CelulaDuplaStrArvore adicionar (String valor, String segunda, CelulaDuplaStrArvore celula)
+    {
+        CelulaDuplaStrArvore tmp = celula;
+        Core.comparacoes++;
+
+        if (celula == null) tmp = new CelulaDuplaStrArvore (valor, segunda);
+        else
+        {
+            int comparacao = valor.compareTo (celula.valor);
+
+            if      (comparacao < 0) celula.esq = adicionar (valor, segunda, celula.esq);
+            else if (comparacao > 0) celula.dir = adicionar (valor, segunda, celula.dir);
+            else    
+            {
+                celula.quantidade++;
+                tmp = celula;
+            }
+        }
+
+        return tmp;
+    }
+
+    // pesquisar
+    public CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda)
+    {
+        System.out.print (valor + "\n=>raiz");
+        return pesquisar_verbosamente_Preordem_binario (valor, segunda, raiz);
+    }
+    private CelulaDuplaStr pesquisar_verbosamente_Preordem_binario (String valor, String segunda, CelulaDuplaStrArvore celula)
+    {
+        CelulaDuplaStr tmp = null;
+        Core.comparacoes += 2;
+
+        if (celula != null)
+        {
+            if (celula.valor.equals (valor)) tmp = celula.arvore.pesquisar_verbosamente (segunda);
+            else tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.esq);
+
+            if (tmp == null) tmp = pesquisar_verbosamente_Preordem_binario (valor, segunda, celula.dir);
+        }
+
+        return tmp;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
 public class Main
 {
     public static void main (String args []) throws Exception
     {
+        // inicio
         long inicio = System.nanoTime ();
-
-        ArvoreBinariaDePesquisaStr arvore = new ArvoreBinariaDePesquisaStr ();
         Gerenciador pokemons = new Gerenciador ();
         Scanner scanner = new Scanner (System.in);
+        // f_inicio
+
+        ArvoreBinariaDePesquisaStrArvore arvore = new ArvoreBinariaDePesquisaStrArvore ();
 
         String entrada = scanner.nextLine ();
         while (!entrada.equals ("FIM"))
@@ -408,8 +512,9 @@ public class Main
             int valor = Integer.parseInt (entrada);
 
             String nome = pokemons.getPokemon (valor).getNome ();
+            String rate = "" + pokemons.getPokemon (valor).getRazao_de_captura ()%15;
 
-            arvore.adicionar (nome);
+            arvore.adicionar (rate, nome);
 
             entrada = scanner.nextLine ();
         }
@@ -418,12 +523,15 @@ public class Main
         while (!entrada.equals ("FIM"))
         {
             Core.comparacoes++;
-            arvore.pesquisar_verbosamente (entrada);
+            String hashed = "" + pokemons.getPokemon (entrada).getRazao_de_captura ()%15;
+            arvore.pesquisar_verbosamente_Preordem_binario (hashed ,entrada);
 
             entrada = scanner.nextLine ();
         }
 
+        // fim
         Core.finalizar (inicio);
         scanner.close ();
+        // f_fim
     }
 }

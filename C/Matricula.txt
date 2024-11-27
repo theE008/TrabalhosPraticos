@@ -1,1 +1,1 @@
-Matricula: 835251 	Tempo de execucao (em ms): 0.031000	Comparacoes: 1323160
+Matricula: 835251 	Tempo de execucao (em ms): 0.033000	Comparacoes: 1323160

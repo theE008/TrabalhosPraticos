@@ -436,9 +436,9 @@ double Str_para_Dbl (char* str)
             {
                 limpar (partes [x]);
             }
-            //limpar (partes); <<<< remover essa linha dá um erro em judas perdeu as botas no código
+            //limpar (partes); // <<<< adicionar essa linha dá um erro em judas perdeu as botas no código
             // não entendi porque, não acho que a eficiência que isso me daria vale realmente a pena 
-            // o sofrimento mental que passei por isto, então estou apostentando essa por enquanto.
+            // o sofrimento mental que passei por isto, então estou aposentando essa por enquanto.
 
             limpezas_feitas++; // <- APENAS PARA SABER QUANTO EU GANHARIA COM ISSO, NÃO TEM UMA LIMPEZA AQUI AINDA!
 
